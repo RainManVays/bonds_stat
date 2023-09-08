@@ -15,4 +15,5 @@ class BondPayResults:
             self.total_amount_bonds= total_amount_bonds
             self.total_money= f'total money for {datetime.now().year} year  : {total_year_payment:.2f} rub'
             self.bond_pay_dates= bond_pay_dates
+            print(bond_pay_dates)
             self.bonds_stat=bonds_stat

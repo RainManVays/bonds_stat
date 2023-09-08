@@ -215,7 +215,6 @@ class App(tk.Tk):
         #self.btn.config(state="disabled")
 
 
-
     def get_pay_dates(self):
         bond_pay_dates={}
         total_year_payment=0.0
@@ -236,28 +235,28 @@ class App(tk.Tk):
                         if bond.figi == instrument.figi:
                             bond_name=bond.name
                             print(bond_name)
-
-                    print(f"bond {bond_name} type {instrument.instrument_type} count {instrument.quantity.units} price {instrument.current_price.units}.{instrument.current_price.nano}")
+                    bonds_count= instrument.quantity.units
+                    bond_actual_price=float(f"{instrument.current_price.units}.{instrument.current_price.nano}")
+                    print(f"bond {bond_name} type {instrument.instrument_type} count {bonds_count} price {bond_actual_price:.2f}")
                     #print(client.instruments.bond_by(id_type= InstrumentIdType.INSTRUMENT_ID_TYPE_FIGI, id=str(instrument.figi)))
                     current_bond_coupons={}
-                    next_pay=0.0
+                    total_month_pay=0.0
                     for coupon in client.instruments.get_bond_coupons(figi=instrument.figi,from_= start_date, to=end_date).events:
                         one_pay = float(f'{coupon.pay_one_bond.units}.{coupon.pay_one_bond.nano}')
-                        if not next_pay:
-                            next_pay=one_pay*instrument.quantity.units
-                        print(f'pay date {coupon.coupon_date} pay for one bond {one_pay} all payment for date {one_pay*instrument.quantity.units}')
+                        if not total_month_pay:
+                            total_month_pay=float(f"{one_pay*bonds_count:.2f}")
+                        print(f'pay date {coupon.coupon_date} pay for one bond {one_pay} all payment for date {total_month_pay}')
                         coupon_month=coupon.coupon_date.month#.strftime('%B')
                         if bond_pay_dates.get(coupon_month):
-                            
-                            bond_pay_dates[coupon_month]+=one_pay*instrument.quantity.units
+                            bond_pay_dates[coupon_month]+=total_month_pay
                         else:
-                            bond_pay_dates[coupon_month]=one_pay*instrument.quantity.units
-                        total_year_payment+=one_pay*instrument.quantity.units
+                            bond_pay_dates[coupon_month]=total_month_pay
+                        total_year_payment+=total_month_pay
                         current_bond_coupons["coupon.coupon_date"]=one_pay
                     bonds_stat.append(BondStat(bond_name=bond_name,
-                                                bonds_count=instrument.quantity.units,
+                                                bonds_count=bonds_count,
                                                 bond_curr_price=float(f"{instrument.current_price.units}.{instrument.current_price.nano}"),
-                                                next_pay=next_pay,
+                                                next_pay=total_month_pay,
                                                 coupons=current_bond_coupons))
         bond_result = BondPayResults(total_amount_bonds=portfolio.total_amount_bonds.units,
                                     total_year_payment=total_year_payment,
@@ -304,7 +303,6 @@ class App(tk.Tk):
         month_name = lambda month:calendar.month_abbr[month]
         month, counts= zip(*lists)
         month = [month_name(x) for x in month]
-        bar_labels = ['red', 'blue', '_red', 'orange','red', 'blue', '_red', 'orange','red', 'blue', '_red', 'orange']
         bar_colors=[]
         for count in counts:
             if count <=1500:
