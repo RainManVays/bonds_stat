@@ -110,11 +110,11 @@ class App(tk.Tk):
         self.tree.column("#4", stretch=tk.NO,width=100)
         self.tree.column("#5", stretch=tk.NO,width=120)
 
-        self.tree.heading("name", text="название")
+        self.tree.heading("name", text="Название")
         self.tree.heading("count", text="Кол-во")
         self.tree.heading("price", text="Цена")
         self.tree.heading("pay", text="Платеж")
-        self.tree.heading("month", text="мес")
+        self.tree.heading("month", text="Мес")
         
         
         # добавляем данные
@@ -125,52 +125,48 @@ class App(tk.Tk):
         selected_bond=""
         for bond in self.tree.selection():
             item = self.tree.item(bond)
-            print(item)
-            temp = item["values"][1]
-            print(temp)
+            coupon_count = item["values"][1]
             coupons= self.get_bond_coupons(item["values"][0])
-            print(coupons)
-
 
             self.coupon_label_clean()
             total_pay=0.0
             for key,value in coupons.items():
-                total_pay+=value*temp
+                total_pay+=value*coupon_count
                 if key.month == 1:
-                    self.jan["text"]=f"jan {value*temp}"
+                    self.jan["text"]=f"jan {value*coupon_count}"
                     self.jan["foreground"]="green"
                 elif key.month==2:
-                    self.feb["text"]=f"feb {value*temp}"
+                    self.feb["text"]=f"feb {value*coupon_count}"
                     self.feb["foreground"]="green"
                 elif key.month==3:
-                    self.mar["text"]=f"mar {value*temp}"
+                    self.mar["text"]=f"mar {value*coupon_count}"
                     self.mar["foreground"]="green"
                 elif key.month==4:
-                    self.apr["text"]=f"apr {value*temp}"
+                    self.apr["text"]=f"apr {value*coupon_count}"
                     self.apr["foreground"]="green"
                 elif key.month==5:
-                    self.may["text"]=f"may {value*temp}"
+                    self.may["text"]=f"may {value*coupon_count}"
                     self.may["foreground"]="green"
                 elif key.month==6:
-                    self.jun["text"]=f"jun {value*temp}"
+                    self.jun["text"]=f"jun {value*coupon_count}"
                     self.jun["foreground"]="green"
                 elif key.month==7:
-                    self.jul["text"]=f"jul {value*temp}"
+                    self.jul["text"]=f"jul {value*coupon_count}"
                     self.jul["foreground"]="green"
                 elif key.month==8:
-                    self.aug["text"]=f"aug {value*temp}"
+                    self.aug["text"]=f"aug {value*coupon_count}"
                     self.aug["foreground"]="green"
                 elif key.month==9:
-                    self.sep["text"]=f"sep {value*temp}"
+                    self.sep["text"]=f"sep {value*coupon_count}"
                     self.sep["foreground"]="green"
                 elif key.month==10:
-                    self.oct["text"]=f"oct {value*temp}"
+                    self.oct["text"]=f"oct {value*coupon_count}"
                     self.oct["foreground"]="green"
                 elif key.month==11:
-                    self.nov["text"]=f"nov {value*temp}"
+                    self.nov["text"]=f"nov {value*coupon_count}"
                     self.nov["foreground"]="green"
                 elif key.month==12:
-                    self.dec["text"]=f"dec {value*temp}"
+                    self.dec["text"]=f"dec {value*coupon_count}"
                     self.dec["foreground"]="green"
             self.coupon_total["text"]=f"TOTAL: {total_pay}"
             self.coupon_total["foreground"]="green"
@@ -308,10 +304,7 @@ class App(tk.Tk):
         month_name = lambda month:calendar.month_abbr[month]
         month, counts= zip(*lists)
         month = [month_name(x) for x in month]
-        #month = ["jan", "feb", "march", "apr", "may", "jun","jul", "aug", "sep", "oct", "nov", "dec"]
-        #counts = [5132, 2664, 2164, 727.29, 1716, 2174, 5118, 2664,2065, 1730, 647, 2016]
         bar_labels = ['red', 'blue', '_red', 'orange','red', 'blue', '_red', 'orange','red', 'blue', '_red', 'orange']
-        #bar_colors = ['tab:red', 'tab:blue', 'tab:red', 'tab:orange','tab:red', 'tab:blue', 'tab:red', 'tab:orange','tab:red', 'tab:blue', 'tab:red', 'tab:orange']
         bar_colors=[]
         for count in counts:
             if count <=1500:
