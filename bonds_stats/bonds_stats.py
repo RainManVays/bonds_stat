@@ -214,14 +214,19 @@ class App(tk.Tk):
         self.bonds_table(self.bond_result.bonds_stat)
         #self.btn.config(state="disabled")
 
+    def get_start_date(self):
+        start_date = date(datetime.now().year,1,1)
+        return datetime.combine(start_date, datetime.min.time())
+    
+    def get_end_date(self):
+        end_date = date(datetime.now().year,12,31)
+        return datetime.combine(end_date, datetime.min.time())
 
     def get_pay_dates(self):
         bond_pay_dates={}
         total_year_payment=0.0
-        start_date = date(datetime.now().year,1,1)
-        end_date = date(datetime.now().year,12,31)
-        start_date= datetime.combine(start_date, datetime.min.time())
-        end_date = datetime.combine(end_date, datetime.min.time())
+        
+        
         bonds_stat=[] 
         with Client(TOKEN) as client:
             accounts = client.users.get_accounts()
@@ -238,10 +243,9 @@ class App(tk.Tk):
                     bonds_count= instrument.quantity.units
                     bond_actual_price=float(f"{instrument.current_price.units}.{instrument.current_price.nano}")
                     print(f"bond {bond_name} type {instrument.instrument_type} count {bonds_count} price {bond_actual_price:.2f}")
-                    #print(client.instruments.bond_by(id_type= InstrumentIdType.INSTRUMENT_ID_TYPE_FIGI, id=str(instrument.figi)))
                     current_bond_coupons={}
                     total_month_pay=0.0
-                    for coupon in client.instruments.get_bond_coupons(figi=instrument.figi,from_= start_date, to=end_date).events:
+                    for coupon in client.instruments.get_bond_coupons(figi=instrument.figi,from_= self.get_start_date(), to=self.get_end_date()).events:
                         one_pay = float(f'{coupon.pay_one_bond.units}.{coupon.pay_one_bond.nano}')
                         if not total_month_pay:
                             total_month_pay=float(f"{one_pay*bonds_count:.2f}")
@@ -269,24 +273,18 @@ class App(tk.Tk):
 
 
     def get_bond_coupons(self, bond_name:str):
-        start_date = date(datetime.now().year,1,1)
-        end_date = date(datetime.now().year,12,31)
-        start_date= datetime.combine(start_date, datetime.min.time())
-        end_date = datetime.combine(end_date, datetime.min.time())
         current_bond_coupons={}
         with Client(TOKEN) as client:
             account_bonds = client.instruments.bonds().instruments
             bond_figi=""
-            print(bond_name)
             for bond in account_bonds:
                 if bond.name in bond_name:
                     bond_figi=bond.figi
                     break
             portfolio = client.operations.get_portfolio(account_id=config['DEFAULT']["ACCOUNT_ID"])
-            print(bond_figi)
             for instrument in portfolio.positions:
                 if instrument.figi==bond_figi:
-                    for coupon in client.instruments.get_bond_coupons(figi=bond_figi,from_= start_date, to=end_date).events:
+                    for coupon in client.instruments.get_bond_coupons(figi=bond_figi,from_= self.get_start_date(), to=self.get_end_date()).events:
                         one_pay = float(f'{coupon.pay_one_bond.units}.{coupon.pay_one_bond.nano}')
                         print(f'pay date {coupon.coupon_date} pay for one bond {one_pay} all payment for date {one_pay*instrument.quantity.units}')
                         coupon_month=coupon.coupon_date.month#.strftime('%B')
