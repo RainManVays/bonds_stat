@@ -171,33 +171,27 @@ class App(tk.Tk):
             self.coupon_total["text"]=f"TOTAL: {total_pay}"
             self.coupon_total["foreground"]="green"
 
+
+
+
+
     def coupon_label_clean(self):
         self.jan["text"]="jan"
-        self.jan["foreground"]="black"
         self.feb["text"]="feb"
-        self.feb["foreground"]="black"
         self.mar["text"]="mar"
-        self.mar["foreground"]="black"
         self.apr["text"]="apr"
-        self.apr["foreground"]="black"
         self.may["text"]="may"
-        self.may["foreground"]="black"
         self.jun["text"]="jun"
-        self.jun["foreground"]="black"
         self.jul["text"]="jul"
-        self.jul["foreground"]="black"
         self.aug["text"]="aug"
-        self.aug["foreground"]="black"
         self.sep["text"]="sep"
-        self.sep["foreground"]="black"
         self.oct["text"]="oct"
-        self.oct["foreground"]="black"
         self.nov["text"]="nov"
-        self.nov["foreground"]="black"
         self.dec["text"]="dec"
-        self.dec["foreground"]="black"
         self.coupon_total["text"]="TOTAL: "
-        self.coupon_total["foreground"]="black"
+        for item in self.frame_coupons.winfo_children():
+            item["foreground"]="black"
+
 
 
 
@@ -212,7 +206,6 @@ class App(tk.Tk):
         self.amount_bonds["text"]=f"total amount in bonds {(self.bond_result.total_amount_bonds)}"
 
         self.bonds_table(self.bond_result.bonds_stat)
-        #self.btn.config(state="disabled")
 
     def get_start_date(self):
         start_date = date(datetime.now().year,1,1)
