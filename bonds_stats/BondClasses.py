@@ -1,11 +1,15 @@
 from datetime import datetime, date
 class BondStat:
-    def __init__(self, bond_name, bonds_count, bond_curr_price:float, next_pay: float, coupons:dict) -> None:
+    def __init__(self, bond_name, bonds_count, bond_curr_price:float, next_pay: float, coupons:dict, months: list) -> None:
         self.bond_name=bond_name
         self.bonds_count=bonds_count
         self.bond_curr_price=bond_curr_price
         self.coupons=coupons
         self.next_pay=next_pay
+        if len(months)==12:
+            self.months="All"
+        else:
+             self.months=months
 
 class BondPayResults:
         def __init__(self, total_amount_bonds, total_year_payment, count_bonds, bond_pay_dates:dict, bonds_stat:[BondStat]) -> None:

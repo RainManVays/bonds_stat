@@ -105,10 +105,10 @@ class App(tk.Tk):
     def bonds_table(self, bonds_list: [BondStat]):
         # определяем заголовки
         self.tree.column("#1", stretch=tk.NO,width=230)
-        self.tree.column("#2", stretch=tk.NO,width=50)
+        self.tree.column("#2", stretch=tk.NO,width=60)
         self.tree.column("#3", stretch=tk.NO,width=70)
         self.tree.column("#4", stretch=tk.NO,width=100)
-        self.tree.column("#5", stretch=tk.NO,width=120)
+        self.tree.column("#5", stretch=tk.NO,width=150)
 
         self.tree.heading("name", text="Название")
         self.tree.heading("count", text="Кол-во")
@@ -119,7 +119,7 @@ class App(tk.Tk):
         
         # добавляем данные
         for bond in bonds_list:
-            self.tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay))
+            self.tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months))
 
     def bond_selected(self,event):
         selected_bond=""
@@ -238,12 +238,15 @@ class App(tk.Tk):
                     print(f"bond {bond_name} type {instrument.instrument_type} count {bonds_count} price {bond_actual_price:.2f}")
                     current_bond_coupons={}
                     total_month_pay=0.0
+                    bond_payment_months=[]
                     for coupon in client.instruments.get_bond_coupons(figi=instrument.figi,from_= self.get_start_date(), to=self.get_end_date()).events:
                         one_pay = float(f'{coupon.pay_one_bond.units}.{coupon.pay_one_bond.nano}')
                         if not total_month_pay:
                             total_month_pay=float(f"{one_pay*bonds_count:.2f}")
                         print(f'pay date {coupon.coupon_date} pay for one bond {one_pay} all payment for date {total_month_pay}')
                         coupon_month=coupon.coupon_date.month#.strftime('%B')
+                        bond_payment_months.append(calendar.month_abbr[coupon_month])
+                        print(f"coupon month {coupon_month}")
                         if bond_pay_dates.get(coupon_month):
                             bond_pay_dates[coupon_month]+=total_month_pay
                         else:
@@ -254,7 +257,8 @@ class App(tk.Tk):
                                                 bonds_count=bonds_count,
                                                 bond_curr_price=float(f"{instrument.current_price.units}.{instrument.current_price.nano}"),
                                                 next_pay=total_month_pay,
-                                                coupons=current_bond_coupons))
+                                                coupons=current_bond_coupons,
+                                                months=bond_payment_months))
         bond_result = BondPayResults(total_amount_bonds=portfolio.total_amount_bonds.units,
                                     total_year_payment=total_year_payment,
                                     count_bonds=portfolio.total_amount_bonds.units,
