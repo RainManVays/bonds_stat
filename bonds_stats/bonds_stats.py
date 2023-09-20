@@ -38,6 +38,8 @@ class App(tk.Tk):
         self.geometry("1400x800")
         self.protocol("WM_DELETE_WINDOW",self.exit)
 
+        notebook = ttk.Notebook()
+        
         self.load_button=ttk.Button(self,text="load statistic", command=self.plot_enable)
         self.initStatistic()
         self.initCoupons()
@@ -115,8 +117,7 @@ class App(tk.Tk):
         self.tree.heading("price", text="Цена")
         self.tree.heading("pay", text="Платеж")
         self.tree.heading("month", text="Мес")
-        
-        
+
         # добавляем данные
         for bond in bonds_list:
             self.tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months))
@@ -129,47 +130,48 @@ class App(tk.Tk):
             coupons= self.get_bond_coupons(item["values"][0])
 
             self.coupon_label_clean()
+            fg_color="green"
             total_pay=0.0
             for key,value in coupons.items():
                 total_pay+=value*coupon_count
                 if key.month == 1:
-                    self.jan["text"]=f"jan {value*coupon_count}"
-                    self.jan["foreground"]="green"
+                    self.jan["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
+                    self.jan["foreground"]=fg_color
                 elif key.month==2:
-                    self.feb["text"]=f"feb {value*coupon_count}"
-                    self.feb["foreground"]="green"
+                    self.feb["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
+                    self.feb["foreground"]=fg_color
                 elif key.month==3:
-                    self.mar["text"]=f"mar {value*coupon_count}"
-                    self.mar["foreground"]="green"
+                    self.mar["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
+                    self.mar["foreground"]=fg_color
                 elif key.month==4:
-                    self.apr["text"]=f"apr {value*coupon_count}"
-                    self.apr["foreground"]="green"
+                    self.apr["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
+                    self.apr["foreground"]=fg_color
                 elif key.month==5:
-                    self.may["text"]=f"may {value*coupon_count}"
-                    self.may["foreground"]="green"
+                    self.may["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
+                    self.may["foreground"]=fg_color
                 elif key.month==6:
-                    self.jun["text"]=f"jun {value*coupon_count}"
-                    self.jun["foreground"]="green"
+                    self.jun["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
+                    self.jun["foreground"]=fg_color
                 elif key.month==7:
-                    self.jul["text"]=f"jul {value*coupon_count}"
-                    self.jul["foreground"]="green"
+                    self.jul["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
+                    self.jul["foreground"]=fg_color
                 elif key.month==8:
-                    self.aug["text"]=f"aug {value*coupon_count}"
-                    self.aug["foreground"]="green"
+                    self.aug["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
+                    self.aug["foreground"]=fg_color
                 elif key.month==9:
-                    self.sep["text"]=f"sep {value*coupon_count}"
-                    self.sep["foreground"]="green"
+                    self.sep["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
+                    self.sep["foreground"]=fg_color
                 elif key.month==10:
-                    self.oct["text"]=f"oct {value*coupon_count}"
-                    self.oct["foreground"]="green"
+                    self.oct["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
+                    self.oct["foreground"]=fg_color
                 elif key.month==11:
-                    self.nov["text"]=f"nov {value*coupon_count}"
-                    self.nov["foreground"]="green"
+                    self.nov["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
+                    self.nov["foreground"]=fg_color
                 elif key.month==12:
-                    self.dec["text"]=f"dec {value*coupon_count}"
-                    self.dec["foreground"]="green"
+                    self.dec["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
+                    self.dec["foreground"]=fg_color
             self.coupon_total["text"]=f"TOTAL: {total_pay}"
-            self.coupon_total["foreground"]="green"
+            self.coupon_total["foreground"]=fg_color
 
 
 
@@ -232,7 +234,7 @@ class App(tk.Tk):
                     for bond in account_bonds:
                         if bond.figi == instrument.figi:
                             bond_name=bond.name
-                            print(bond_name)
+                            
                     bonds_count= instrument.quantity.units
                     bond_actual_price=float(f"{instrument.current_price.units}.{instrument.current_price.nano}")
                     print(f"bond {bond_name} type {instrument.instrument_type} count {bonds_count} price {bond_actual_price:.2f}")
@@ -246,7 +248,6 @@ class App(tk.Tk):
                         print(f'pay date {coupon.coupon_date} pay for one bond {one_pay} all payment for date {total_month_pay}')
                         coupon_month=coupon.coupon_date.month#.strftime('%B')
                         bond_payment_months.append(calendar.month_abbr[coupon_month])
-                        print(f"coupon month {coupon_month}")
                         if bond_pay_dates.get(coupon_month):
                             bond_pay_dates[coupon_month]+=total_month_pay
                         else:
@@ -283,14 +284,13 @@ class App(tk.Tk):
                 if instrument.figi==bond_figi:
                     for coupon in client.instruments.get_bond_coupons(figi=bond_figi,from_= self.get_start_date(), to=self.get_end_date()).events:
                         one_pay = float(f'{coupon.pay_one_bond.units}.{coupon.pay_one_bond.nano}')
-                        print(f'pay date {coupon.coupon_date} pay for one bond {one_pay} all payment for date {one_pay*instrument.quantity.units}')
-                        coupon_month=coupon.coupon_date.month#.strftime('%B')
                         current_bond_coupons[coupon.coupon_date]=one_pay
                     break
                 
             return current_bond_coupons 
 
-
+    def get_all_bonds():
+        pass
 
     def bond_plot(self):
         payments_stat = self.get_pay_dates()
