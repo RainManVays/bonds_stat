@@ -38,12 +38,26 @@ class App(tk.Tk):
         self.geometry("1400x800")
         self.protocol("WM_DELETE_WINDOW",self.exit)
 
-        notebook = ttk.Notebook()
+        self.notebook = ttk.Notebook()
+        self.notebook.pack(expand=True, fill=tk.BOTH)
         
-        self.load_button=ttk.Button(self,text="load statistic", command=self.plot_enable)
+        self.my_bond_frame = ttk.Frame(self.notebook)
+        self.bond_screener = ttk.Frame(self.notebook)
+        
+        self.my_bond_frame.pack(fill=tk.BOTH, expand=True)
+        self.bond_screener.pack(fill=tk.BOTH, expand=True)
+        
+        # добавляем фреймы в качестве вкладок
+        self.notebook.add(self.my_bond_frame, text="MyBond")
+        self.notebook.add(self.bond_screener, text="Bond Screener")
+
+
+
+        self.load_button=ttk.Button(self.my_bond_frame,text="load statistic", command=self.plot_enable)
         self.initStatistic()
         self.initCoupons()
         self.initLabels()
+        self.init_bond_screener()
         self.load_button.pack()
         
 
@@ -53,15 +67,23 @@ class App(tk.Tk):
             plt.close(self.plot_figure)
         self.destroy()
 
+
+    def init_bond_screener(self):
+        self.screener_table = ttk.Frame(self.bond_screener, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=700)
+        self.screener_tree = ttk.Treeview(self.screener_table, columns=("name","count","price","pay","month"), show="headings")
+        self.screener_tree.bind("<<TreeviewSelect>>",self.bond_selected)
+        self.screener_tree.place(width=1350,height=680,x=0, y=0)
+        self.screener_table.pack(anchor=tk.NW, fill=tk.X, padx=5, pady=5)
+
     def initStatistic(self):
-        self.frame_table = ttk.Frame(self, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=500)
+        self.frame_table = ttk.Frame(self.my_bond_frame, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=500)
         self.tree = ttk.Treeview(self.frame_table, columns=("name","count","price","pay","month"), show="headings")
         self.tree.bind("<<TreeviewSelect>>",self.bond_selected)
         self.tree.place(width=650,height=480,x=710, y=0)
         self.frame_table.pack(anchor=tk.NW, fill=tk.X, padx=5, pady=5)
 
     def initCoupons(self):
-        self.frame_coupons = ttk.Frame(self, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=80)
+        self.frame_coupons = ttk.Frame(self.my_bond_frame, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=80)
         self.jan = ttk.Label(self.frame_coupons,text="jan", font=("Arial",13))
         self.feb = ttk.Label(self.frame_coupons,text="feb", font=("Arial",13))
         self.mar = ttk.Label(self.frame_coupons,text="mar", font=("Arial",13))
@@ -91,7 +113,7 @@ class App(tk.Tk):
         self.frame_coupons.pack(anchor=tk.S, fill=tk.X, padx=5, pady=5)
 
     def initLabels(self):
-        self.frame_labels = ttk.Frame(borderwidth=1, relief=tk.SOLID, padding=[8, 10])
+        self.frame_labels = ttk.Frame(self.my_bond_frame,borderwidth=1, relief=tk.SOLID, padding=[8, 10])
         self.total_payment = ttk.Label(self.frame_labels,text="total_payment")
         self.avg_roi = ttk.Label(self.frame_labels,text="avg_roi")
         self.avg_month= ttk.Label(self.frame_labels,text="avg_month")
