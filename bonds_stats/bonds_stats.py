@@ -70,7 +70,7 @@ class App(tk.Tk):
 
     def init_bond_screener(self):
         self.screener_table = ttk.Frame(self.bond_screener, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=700)
-        self.screener_tree = ttk.Treeview(self.screener_table, columns=("name","count","price","pay","month"), show="headings")
+        self.screener_tree = ttk.Treeview(self.screener_table, columns=("name","last_pay_year","price","months","percent","coupon","period","duration","amortization","static coupon","rating"), show="headings")
         self.screener_tree.bind("<<TreeviewSelect>>",self.bond_selected)
         self.screener_tree.place(width=1350,height=680,x=0, y=0)
         self.screener_table.pack(anchor=tk.NW, fill=tk.X, padx=5, pady=5)
@@ -143,6 +143,35 @@ class App(tk.Tk):
         # добавляем данные
         for bond in bonds_list:
             self.tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months))
+
+    def bonds_screener_table(self, bonds_list: [BondStat]):
+        # определяем заголовки
+        #"static coupon","rating"), show="headings")
+     
+        self.screener_tree.column("#1", stretch=tk.NO,width=230)
+        self.screener_tree.column("#2", stretch=tk.NO,width=60)
+        self.screener_tree.column("#3", stretch=tk.NO,width=70)
+        self.screener_tree.column("#4", stretch=tk.NO,width=100)
+        self.screener_tree.column("#5", stretch=tk.NO,width=150)
+        self.screener_tree.column("#6", stretch=tk.NO,width=150)
+        self.screener_tree.column("#7", stretch=tk.NO,width=150)
+        self.screener_tree.column("#8", stretch=tk.NO,width=150)
+        self.screener_tree.column("#9", stretch=tk.NO,width=150)
+
+        self.screener_tree.heading("name", text="Название")
+        self.screener_tree.heading("last_pay_year", text="погашение")
+        self.screener_tree.heading("price", text="Цена")
+        self.screener_tree.heading("months", text="Мес")
+        self.screener_tree.heading("percent", text="проценты")
+        self.screener_tree.heading("coupon", text="купон")
+        self.screener_tree.heading("period", text="период")
+        self.screener_tree.heading("duration", text="дюрация")
+        self.screener_tree.heading("amortization", text="амортизация")
+        self.screener_tree.heading("static coupon", text="фикс купон")
+
+        # добавляем данные
+        #for bond in bonds_list:
+        #    self.screener_tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months))
 
     def bond_selected(self,event):
         selected_bond=""
