@@ -1,6 +1,8 @@
 import tkinter as tk
 import matplotlib
 import matplotlib.pyplot as plt
+
+from bonds_screener_view import BondsScreener
 matplotlib.use('TkAgg')
 import calendar
 from  BondClasses import *
@@ -57,7 +59,18 @@ class App(tk.Tk):
         self.initStatistic()
         self.initCoupons()
         self.initLabels()
-        self.init_bond_screener()
+        
+
+        bs = BondsScreener()
+        frame_screener = bs.init_frame_screener(self.bond_screener)
+        
+        self.init_bond_screener(frame_screener)
+
+        bs.place_frame_screener(frame_screener)
+
+
+
+        self.init_bond_screener_load_data()
         self.load_button.pack()
         
 
@@ -68,12 +81,19 @@ class App(tk.Tk):
         self.destroy()
 
 
-    def init_bond_screener(self):
-        self.screener_table = ttk.Frame(self.bond_screener, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=700)
-        self.screener_tree = ttk.Treeview(self.screener_table, columns=("name","last_pay_year","price","months","percent","coupon","period","duration","amortization","static coupon","rating"), show="headings")
+    def init_bond_screener(self, frame: ttk.Frame):
+        self.screener_tree = ttk.Treeview(frame, columns=("name","last_pay_year","price","months","percent","coupon","period","duration","amortization","static coupon","rating"), show="headings")
         self.screener_tree.bind("<<TreeviewSelect>>",self.bond_selected)
         self.screener_tree.place(width=1350,height=680,x=0, y=0)
-        self.screener_table.pack(anchor=tk.NW, fill=tk.X, padx=5, pady=5)
+        self.bond_screener_button=ttk.Button(frame,text="load data", command=self.bond_screener_enable)
+        self.bond_screener_button.place(width=100,height=50,x=670, y=670)
+        
+        
+
+    def init_bond_screener_load_data(self):
+        pass
+
+
 
     def initStatistic(self):
         self.frame_table = ttk.Frame(self.my_bond_frame, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=500)
@@ -170,8 +190,8 @@ class App(tk.Tk):
         self.screener_tree.heading("static coupon", text="фикс купон")
 
         # добавляем данные
-        #for bond in bonds_list:
-        #    self.screener_tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months))
+        for bond in bonds_list:
+            self.screener_tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months))
 
     def bond_selected(self,event):
         selected_bond=""
@@ -229,6 +249,7 @@ class App(tk.Tk):
 
 
     def coupon_label_clean(self):
+        
         self.jan["text"]="jan"
         self.feb["text"]="feb"
         self.mar["text"]="mar"
@@ -259,6 +280,10 @@ class App(tk.Tk):
         self.amount_bonds["text"]=f"total amount in bonds {(self.bond_result.total_amount_bonds)}"
 
         self.bonds_table(self.bond_result.bonds_stat)
+
+
+    def bond_screener_enable(self):
+        self.bonds_screener_table(self.get_all_bonds())
 
     def get_start_date(self):
         start_date = date(datetime.now().year,1,1)
@@ -340,8 +365,22 @@ class App(tk.Tk):
                 
             return current_bond_coupons 
 
-    def get_all_bonds():
-        pass
+    def get_all_bonds(self):
+        bond_pay_dates={}
+        total_year_payment=0.0
+        
+        
+        bonds_stat=[] 
+        with Client(TOKEN) as client:
+            accounts = client.users.get_accounts()
+            print(accounts)
+            bonds =  client.instruments.bonds().instruments
+            for bond in bonds:
+                
+
+                bonds_stat.append(BondStat(bond_name=bond.name,bonds_count=0,bond_curr_price=1,next_pay=0,coupons={},months=[]))
+
+        return bonds_stat
 
     def bond_plot(self):
         payments_stat = self.get_pay_dates()
