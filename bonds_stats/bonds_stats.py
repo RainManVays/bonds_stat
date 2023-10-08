@@ -1,6 +1,7 @@
 import tkinter as tk
 import matplotlib
 import matplotlib.pyplot as plt
+from bond_invest_facade import BondInvestFacade
 
 from bonds_screener_view import BondsScreener
 matplotlib.use('TkAgg')
@@ -61,16 +62,8 @@ class App(tk.Tk):
         self.initLabels()
         
 
-        bs = BondsScreener()
-        frame_screener = bs.init_frame_screener(self.bond_screener)
-        
-        self.init_bond_screener(frame_screener)
+        bs = BondsScreener(self.bond_screener)
 
-        bs.place_frame_screener(frame_screener)
-
-
-
-        self.init_bond_screener_load_data()
         self.load_button.pack()
         
 
@@ -79,19 +72,6 @@ class App(tk.Tk):
             self.plot_widget.pack_forget()
             plt.close(self.plot_figure)
         self.destroy()
-
-
-    def init_bond_screener(self, frame: ttk.Frame):
-        self.screener_tree = ttk.Treeview(frame, columns=("name","last_pay_year","price","months","percent","coupon","period","duration","amortization","static coupon","rating"), show="headings")
-        self.screener_tree.bind("<<TreeviewSelect>>",self.bond_selected)
-        self.screener_tree.place(width=1350,height=680,x=0, y=0)
-        self.bond_screener_button=ttk.Button(frame,text="load data", command=self.bond_screener_enable)
-        self.bond_screener_button.place(width=100,height=50,x=670, y=670)
-        
-        
-
-    def init_bond_screener_load_data(self):
-        pass
 
 
 
@@ -168,33 +148,11 @@ class App(tk.Tk):
         # определяем заголовки
         #"static coupon","rating"), show="headings")
      
-        self.screener_tree.column("#1", stretch=tk.NO,width=230)
-        self.screener_tree.column("#2", stretch=tk.NO,width=60)
-        self.screener_tree.column("#3", stretch=tk.NO,width=70)
-        self.screener_tree.column("#4", stretch=tk.NO,width=100)
-        self.screener_tree.column("#5", stretch=tk.NO,width=150)
-        self.screener_tree.column("#6", stretch=tk.NO,width=150)
-        self.screener_tree.column("#7", stretch=tk.NO,width=150)
-        self.screener_tree.column("#8", stretch=tk.NO,width=150)
-        self.screener_tree.column("#9", stretch=tk.NO,width=150)
-
-        self.screener_tree.heading("name", text="Название")
-        self.screener_tree.heading("last_pay_year", text="погашение")
-        self.screener_tree.heading("price", text="Цена")
-        self.screener_tree.heading("months", text="Мес")
-        self.screener_tree.heading("percent", text="проценты")
-        self.screener_tree.heading("coupon", text="купон")
-        self.screener_tree.heading("period", text="период")
-        self.screener_tree.heading("duration", text="дюрация")
-        self.screener_tree.heading("amortization", text="амортизация")
-        self.screener_tree.heading("static coupon", text="фикс купон")
-
         # добавляем данные
         for bond in bonds_list:
             self.screener_tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months))
 
     def bond_selected(self,event):
-        selected_bond=""
         for bond in self.tree.selection():
             item = self.tree.item(bond)
             coupon_count = item["values"][1]
@@ -249,7 +207,6 @@ class App(tk.Tk):
 
 
     def coupon_label_clean(self):
-        
         self.jan["text"]="jan"
         self.feb["text"]="feb"
         self.mar["text"]="mar"
@@ -298,20 +255,21 @@ class App(tk.Tk):
         total_year_payment=0.0
         
         
+
+
+
+        bond_facade = BondInvestFacade(TOKEN)
         bonds_stat=[] 
         with Client(TOKEN) as client:
             accounts = client.users.get_accounts()
             print(accounts)
             portfolio = client.operations.get_portfolio(account_id=config['DEFAULT']["ACCOUNT_ID"])
-            account_bonds = client.instruments.bonds().instruments
             for instrument in portfolio.positions:
                 if instrument.instrument_type=='bond':
-                    bond_name=""
-                    for bond in account_bonds:
-                        if bond.figi == instrument.figi:
-                            bond_name=bond.name
+                    bond_name= bond_facade.get_bond_name(instrument.figi)
+                    
                             
-                    bonds_count= instrument.quantity.units
+                    bonds_count = instrument.quantity.units
                     bond_actual_price=float(f"{instrument.current_price.units}.{instrument.current_price.nano}")
                     print(f"bond {bond_name} type {instrument.instrument_type} count {bonds_count} price {bond_actual_price:.2f}")
                     current_bond_coupons={}
@@ -344,6 +302,11 @@ class App(tk.Tk):
 
         self.bond_result = bond_result
         return bond_result
+
+
+    def get_account_bonds(self):
+        pass
+
 
 
     def get_bond_coupons(self, bond_name:str):
