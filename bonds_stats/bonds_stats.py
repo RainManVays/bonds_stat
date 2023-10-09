@@ -322,6 +322,7 @@ class App(tk.Tk):
             for instrument in portfolio.positions:
                 if instrument.figi==bond_figi:
                     for coupon in client.instruments.get_bond_coupons(figi=bond_figi,from_= self.get_start_date(), to=self.get_end_date()).events:
+                        
                         one_pay = float(f'{coupon.pay_one_bond.units}.{coupon.pay_one_bond.nano}')
                         current_bond_coupons[coupon.coupon_date]=one_pay
                     break

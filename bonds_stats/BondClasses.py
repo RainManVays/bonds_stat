@@ -1,4 +1,6 @@
 from datetime import datetime, date
+
+from tinkoff.invest.schemas import BondResponse, Coupon, PortfolioPosition
 class BondStat:
     def __init__(self, bond_name, bonds_count, bond_curr_price:float, next_pay: float, coupons:dict, months: list) -> None:
         self.bond_name=bond_name
@@ -10,6 +12,18 @@ class BondStat:
             self.months="All"
         else:
              self.months=months
+
+
+
+class BondInfo:
+     def __init__(self, bond: PortfolioPosition, bond_name: str,) -> None:
+          
+          pass
+
+class CouponInfo:
+     def __init__(self, coupon: Coupon, bond_name: str) -> None:
+          
+          pass
 
 class BondPayResults:
         def __init__(self, total_amount_bonds, total_year_payment, count_bonds, bond_pay_dates:dict, bonds_stat:[BondStat]) -> None:
