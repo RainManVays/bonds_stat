@@ -16,9 +16,10 @@ class BondStat:
 
 
 class BondInfo:
-     def __init__(self, bond: PortfolioPosition, bond_name: str,) -> None:
-          
-          pass
+     def __init__(self, bond: BondResponse) -> None:
+        self.bond_name=bond.instrument.name
+        
+        self.bond_curr_price=bond.instrument.nominal
 
 class CouponInfo:
      def __init__(self, coupon: Coupon, bond_name: str) -> None:

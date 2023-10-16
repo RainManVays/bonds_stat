@@ -54,15 +54,13 @@ class App(tk.Tk):
         self.notebook.add(self.my_bond_frame, text="MyBond")
         self.notebook.add(self.bond_screener, text="Bond Screener")
 
-
-
         self.load_button=ttk.Button(self.my_bond_frame,text="load statistic", command=self.plot_enable)
         self.initStatistic()
         self.initCoupons()
         self.initLabels()
         
 
-        bs = BondsScreener(self.bond_screener)
+        bs = BondsScreener(self.bond_screener, TOKEN)
 
         self.load_button.pack()
         
@@ -144,13 +142,6 @@ class App(tk.Tk):
         for bond in bonds_list:
             self.tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months))
 
-    def bonds_screener_table(self, bonds_list: [BondStat]):
-        # определяем заголовки
-        #"static coupon","rating"), show="headings")
-     
-        # добавляем данные
-        for bond in bonds_list:
-            self.screener_tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months))
 
     def bond_selected(self,event):
         for bond in self.tree.selection():
@@ -239,9 +230,6 @@ class App(tk.Tk):
         self.bonds_table(self.bond_result.bonds_stat)
 
 
-    def bond_screener_enable(self):
-        self.bonds_screener_table(self.get_all_bonds())
-
     def get_start_date(self):
         start_date = date(datetime.now().year,1,1)
         return datetime.combine(start_date, datetime.min.time())
@@ -329,22 +317,7 @@ class App(tk.Tk):
                 
             return current_bond_coupons 
 
-    def get_all_bonds(self):
-        bond_pay_dates={}
-        total_year_payment=0.0
-        
-        
-        bonds_stat=[] 
-        with Client(TOKEN) as client:
-            accounts = client.users.get_accounts()
-            print(accounts)
-            bonds =  client.instruments.bonds().instruments
-            for bond in bonds:
-                
 
-                bonds_stat.append(BondStat(bond_name=bond.name,bonds_count=0,bond_curr_price=1,next_pay=0,coupons={},months=[]))
-
-        return bonds_stat
 
     def bond_plot(self):
         payments_stat = self.get_pay_dates()

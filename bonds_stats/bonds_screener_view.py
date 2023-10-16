@@ -1,14 +1,19 @@
 from tkinter import ttk
 import tkinter as tk
 
+from BondClasses import BondStat
+from bond_invest_facade import BondInvestFacade
+
 class BondsScreener():
 
-    def __init__(self, parent_frame: ttk.Frame) -> None:
+    def __init__(self, parent_frame: ttk.Frame, token) -> None:
         self.parent_frame = parent_frame
 
         self.screener_frame = self.__init_frame_screener(parent_frame)
         self.bond_screener_table = self.__init_bond_screener(self.screener_frame)
         self.__place_frame_screener(self.screener_frame)
+
+        self.bond_facade= BondInvestFacade(token)
 
 
 
@@ -49,8 +54,19 @@ class BondsScreener():
         return screener_tree
 
 
+    def bonds_screener_table(self, bonds_list: [BondStat]):
+        # определяем заголовки
+        #"static coupon","rating"), show="headings")
+     
+        # добавляем данные
+        for bond in bonds_list:
+            self.bond_screener_table.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months))
+
+
+
+
     def bond_screener_enable(self):
-        pass
+        self.bonds_screener_table(self.bond_facade.get_all_bonds())
 
     def bond_selected(self):
         pass
