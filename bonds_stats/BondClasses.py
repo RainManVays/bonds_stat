@@ -11,20 +11,34 @@ class BondStat:
         if len(months)==12:
             self.months="All"
         else:
-             self.months=months
+            self.months=months
 
 
 
 class BondInfo:
-     def __init__(self, bond: BondResponse) -> None:
+     def __init__(self, bond: BondResponse, coupons: list) -> None:
+        self.bond_figi= bond.instrument.figi
         self.bond_name=bond.instrument.name
         
         self.bond_curr_price=bond.instrument.nominal
+        self.bond_nominal_price=bond.instrument.nominal
+        self.bond_end_date=bond.instrument.maturity_date
+        self.bond_coupon=""
+        self.bond_month_payments=""
+        self.percent=""
+        self.fix_coupon= ""
+        self.pay_period=bond.instrument.coupon_quantity_per_year
+        self.amortization= bond.instrument.amortization_flag
+        self.bond_infiniti= bond.instrument.perpetual_flag
+        
 
 class CouponInfo:
      def __init__(self, coupon: Coupon, bond_name: str) -> None:
-          
-          pass
+          self.coupon_date=coupon.coupon_date
+          self.coupon_number=coupon.coupon_number
+          self.pay_one_bond=coupon.pay_one_bond
+          self.coupon_type=coupon.coupon_type
+          self.coupon_period=coupon.coupon_period
 
 class BondPayResults:
         def __init__(self, total_amount_bonds, total_year_payment, count_bonds, bond_pay_dates:dict, bonds_stat:[BondStat]) -> None:

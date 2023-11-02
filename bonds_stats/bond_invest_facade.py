@@ -35,8 +35,6 @@ class BondInvestFacade:
             print(accounts)
             bonds =  client.instruments.bonds().instruments
             for bond in bonds:
-                
-
                 bonds_stat.append(BondStat(bond_name=bond.name,bonds_count=0,bond_curr_price=1,next_pay=0,coupons={},months=[]))
 
         return bonds_stat
