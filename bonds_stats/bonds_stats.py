@@ -75,7 +75,7 @@ class App(tk.Tk):
 
     def initStatistic(self):
         self.frame_table = ttk.Frame(self.my_bond_frame, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=500)
-        self.tree = ttk.Treeview(self.frame_table, columns=("name","count","price","pay","month"), show="headings")
+        self.tree = ttk.Treeview(self.frame_table, columns=("name","count","price","pay","month","percent"), show="headings")
         self.tree.bind("<<TreeviewSelect>>",self.bond_selected)
         self.tree.place(width=650,height=480,x=710, y=0)
         self.frame_table.pack(anchor=tk.NW, fill=tk.X, padx=5, pady=5)
@@ -130,17 +130,21 @@ class App(tk.Tk):
         self.tree.column("#2", stretch=tk.NO,width=60)
         self.tree.column("#3", stretch=tk.NO,width=70)
         self.tree.column("#4", stretch=tk.NO,width=100)
-        self.tree.column("#5", stretch=tk.NO,width=150)
+        self.tree.column("#5", stretch=tk.NO,width=140)
+        self.tree.column("#6", stretch=tk.NO,width=50)
 
         self.tree.heading("name", text="Название")
         self.tree.heading("count", text="Кол-во")
         self.tree.heading("price", text="Цена")
         self.tree.heading("pay", text="Платеж")
         self.tree.heading("month", text="Мес")
+        self.tree.heading("percent", text="%")
 
         # добавляем данные
         for bond in bonds_list:
-            self.tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months))
+            month_cnt= 12 if "All" in bond.months else len(bond.months)
+            percent = f"{(bond.next_pay/bond.bonds_count*(month_cnt)/bond.bond_curr_price*100):.2f}"
+            self.tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months,percent))
 
 
     def bond_selected(self,event):

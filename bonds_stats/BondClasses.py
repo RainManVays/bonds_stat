@@ -33,7 +33,7 @@ class BondInfo:
         
 
 class CouponInfo:
-     def __init__(self, coupon: Coupon, bond_name: str) -> None:
+     def __init__(self, coupon: Coupon, bond_name: str, bond_figi:str) -> None:
           self.coupon_date=coupon.coupon_date
           self.coupon_number=coupon.coupon_number
           self.pay_one_bond=coupon.pay_one_bond

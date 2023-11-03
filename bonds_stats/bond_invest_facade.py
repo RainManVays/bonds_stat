@@ -1,4 +1,4 @@
-from BondClasses import BondStat
+from BondClasses import BondStat, CouponInfo
 from tinkoff.invest import Client, BondResponse, PortfolioResponse, PortfolioPosition, InstrumentIdType, GetBondCouponsResponse
 
 
@@ -38,3 +38,15 @@ class BondInvestFacade:
                 bonds_stat.append(BondStat(bond_name=bond.name,bonds_count=0,bond_curr_price=1,next_pay=0,coupons={},months=[]))
 
         return bonds_stat
+    
+    def money_value_to_float(self,units, nano):
+        return f"{float(f'{units}.{nano}'):.2f}"
+
+
+
+    def get_bond_coupon(self, figi:str, start_date,end_date) -> list:
+        coupons=[]
+        with Client(self.token) as client:
+            for coupon in client.instruments.get_bond_coupons(figi=figi,from_= start_date, to=end_date).events:
+                one_pay = self.money_value_to_float(coupon.pay_one_bond.units,coupon.pay_one_bond.nano)
+                coupons.append(CouponInfo(coupon=coupon))
