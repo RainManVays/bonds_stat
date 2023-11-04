@@ -1,6 +1,7 @@
-from BondClasses import BondStat, CouponInfo
+from datetime import date, datetime
+from BondClasses import BondStat, CouponInfo, BondInfo
 from tinkoff.invest import Client, BondResponse, PortfolioResponse, PortfolioPosition, InstrumentIdType, GetBondCouponsResponse
-
+from time import sleep
 
 class BondInvestFacade:
 
@@ -23,30 +24,30 @@ class BondInvestFacade:
                 if bond.figi == bond_figi:
                     return bond.name
 
-    def get_all_bonds(self):
-        bond_pay_dates={}
-        total_year_payment=0.0
-        
-        
+    def get_start_date(self):
+        start_date = date(datetime.now().year,1,1)
+        return datetime.combine(start_date, datetime.min.time())
+    
+    def get_end_date(self):
+        end_date = date(datetime.now().year,12,31)
+        return datetime.combine(end_date, datetime.min.time())
+
+
+
+
+    def get_all_bonds(self):      
         bonds_stat=[] 
         with Client(self.token) as client:
-            accounts = client.users.get_accounts()
-            
-            print(accounts)
-            bonds =  client.instruments.bonds().instruments
+            bonds = client.instruments.bonds().instruments
             for bond in bonds:
-                bonds_stat.append(BondStat(bond_name=bond.name,bonds_count=0,bond_curr_price=1,next_pay=0,coupons={},months=[]))
+                bonds_stat.append(BondInfo(bond,self.get_bond_coupon(bond.figi,self.get_start_date(), self.get_end_date())))
 
         return bonds_stat
-    
-    def money_value_to_float(self,units, nano):
-        return f"{float(f'{units}.{nano}'):.2f}"
 
-
-
-    def get_bond_coupon(self, figi:str, start_date,end_date) -> list:
+    def get_bond_coupon(self, figi:str, start_date, end_date) -> list:
         coupons=[]
+        sleep(0.3)
         with Client(self.token) as client:
             for coupon in client.instruments.get_bond_coupons(figi=figi,from_= start_date, to=end_date).events:
-                one_pay = self.money_value_to_float(coupon.pay_one_bond.units,coupon.pay_one_bond.nano)
-                coupons.append(CouponInfo(coupon=coupon))
+                coupons.append(CouponInfo(coupon=coupon, bond_figi=figi))
+        return coupons

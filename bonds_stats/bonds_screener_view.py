@@ -1,7 +1,7 @@
 from tkinter import ttk
 import tkinter as tk
 
-from BondClasses import BondStat
+from BondClasses import BondStat, BondInfo
 from bond_invest_facade import BondInvestFacade
 
 class BondsScreener():
@@ -50,20 +50,15 @@ class BondsScreener():
         screener_tree.heading("amortization", text="амортизация")
         screener_tree.heading("static coupon", text="фикс купон")
         bond_screener_button=ttk.Button(frame,text="load data", command=self.bond_screener_enable)
-        bond_screener_button.place(width=100,height=50,x=670, y=670)
+        bond_screener_button.place(width=100,height=30,x=670, y=680)
+        bond_screener_progess = ttk.Progressbar(frame,orient="horizontal", length=300, value=0)
+        bond_screener_progess.place(width=300,height=10,x=670, y=680)
         return screener_tree
 
 
-    def bonds_screener_table(self, bonds_list: [BondStat]):
-        # определяем заголовки
-        #"static coupon","rating"), show="headings")
-     
-        # добавляем данные
+    def bonds_screener_table(self, bonds_list: list[BondInfo]):
         for bond in bonds_list:
-            self.bond_screener_table.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months))
-
-
-
+            self.bond_screener_table.insert("", tk.END, values=(bond.bond_name,bond.bond_end_date,bond.bond_curr_price,bond.bond_month_payments, bond.percent,bond.bond_coupon))
 
     def bond_screener_enable(self):
         self.bonds_screener_table(self.bond_facade.get_all_bonds())
