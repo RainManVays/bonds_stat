@@ -141,6 +141,7 @@ class App(tk.Tk):
         self.tree.heading("percent", text="%")
 
         # добавляем данные
+        self.tree.delete(*self.tree.get_children())
         for bond in bonds_list:
             month_cnt= 12 if "All" in bond.months else len(bond.months)
             percent = f"{(bond.next_pay/bond.bonds_count*(month_cnt)/bond.bond_curr_price*100):.2f}"
@@ -223,6 +224,9 @@ class App(tk.Tk):
 
 
     def plot_enable(self):
+        if self.plot_widget:
+            self.plot_widget.delete(self.plot_widget.children)
+        
         self.plot_widget= self.bond_plot().get_tk_widget()
         self.plot_widget.place(width=700,x=0)
         
@@ -230,7 +234,7 @@ class App(tk.Tk):
         self.avg_roi["text"]=(self.bond_result.avg_roi)
         self.avg_month["text"]=(self.bond_result.avg_money_for_month)
         self.amount_bonds["text"]=f"total amount in bonds {(self.bond_result.total_amount_bonds)}"
-
+        
         self.bonds_table(self.bond_result.bonds_stat)
 
 
@@ -339,10 +343,12 @@ class App(tk.Tk):
                 bar_colors.append('tab:green')
             else:
                 bar_colors.append('tab:blue')
-
+        if self.plot_figure:
+            self.plot_figure.clear()
         self.plot_figure, ax = plt.subplots()
 
         figure_canvas= FigureCanvasTkAgg(self.plot_figure,self.frame_table)
+        
         NavigationToolbar2Tk(figure_canvas,self)
         hbars = ax.bar(x=month, height= counts, label=counts,color=bar_colors)
         ax.bar_label(hbars, fmt='%.0f')
