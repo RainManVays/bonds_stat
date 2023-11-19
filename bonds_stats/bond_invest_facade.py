@@ -33,7 +33,12 @@ class BondInvestFacade:
         return datetime.combine(end_date, datetime.min.time())
 
 
-
+    def get_all_accounts(self):
+        with Client(self.token) as client:
+            accounts = client.users.get_accounts()
+            for acc in accounts.accounts:
+                print(acc)
+            
 
     def get_all_bonds(self):      
         bonds_stat=[] 

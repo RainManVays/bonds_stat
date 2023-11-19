@@ -61,7 +61,7 @@ class App(tk.Tk):
         
 
         bs = BondsScreener(self.bond_screener, TOKEN)
-
+        BondInvestFacade(TOKEN).get_all_accounts()
         self.load_button.pack()
         
 
