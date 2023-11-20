@@ -40,22 +40,33 @@ class BondsScreener():
         screener_tree.column("#9", stretch=tk.NO,width=80)
         screener_tree.column("#10", stretch=tk.NO,width=80)
 
-        screener_tree.heading("name", text="Название")
-        screener_tree.heading("last_pay_year", text="погашение")
-        screener_tree.heading("price", text="Цена")
-        screener_tree.heading("months", text="Мес")
-        screener_tree.heading("percent", text="проценты")
-        screener_tree.heading("coupon", text="купон")
-        screener_tree.heading("period", text="период")
-        screener_tree.heading("duration", text="дюрация")
-        screener_tree.heading("amortization", text="амортизация")
-        screener_tree.heading("static coupon", text="фикс купон")
+        screener_tree.heading("name", text="Название", command=lambda: self.test_sort(0, False))
+        screener_tree.heading("last_pay_year", text="погашение", command=lambda: self.test_sort(1, False))
+        screener_tree.heading("price", text="Цена", command=lambda: self.test_sort(2, False))
+        screener_tree.heading("months", text="Мес", command=lambda: self.test_sort(3, False))
+        screener_tree.heading("percent", text="проценты", command=lambda: self.test_sort(4, False))
+        screener_tree.heading("coupon", text="купон", command=lambda: self.test_sort(5, False))
+        screener_tree.heading("period", text="период", command=lambda: self.test_sort(6, False))
+        screener_tree.heading("duration", text="дюрация", command=lambda: self.test_sort(7, False))
+        screener_tree.heading("amortization", text="амортизация", command=lambda: self.test_sort(8, False))
+        screener_tree.heading("static coupon", text="фикс купон", command=lambda: self.test_sort(9, False))
         #bond_screener_progess = ttk.Progressbar(frame,orient="horizontal", length=300, variable=self.progress_var)
         #bond_screener_progess.place(width=800,height=10,x=320, y=720)
         bond_screener_button=ttk.Button(frame,text="load data", command=self.bond_screener_enable)
         bond_screener_button.place(width=100,height=30,x=670, y=685)
         
         return screener_tree
+    
+    def test_sort(self, col, reverse):
+        # получаем все значения столбцов в виде отдельного списка
+        l = [(self.bond_screener_table.set(k, col), k) for k in self.bond_screener_table.get_children("")]
+        # сортируем список
+        l.sort(reverse=reverse)
+        # переупорядочиваем значения в отсортированном порядке
+        for index,  (_, k) in enumerate(l):
+            self.bond_screener_table.move(k, "", index)
+        # в следующий раз выполняем сортировку в обратном порядке
+        self.bond_screener_table.heading(col, command=lambda: self.test_sort(col, not reverse))
 
 
     def bonds_screener_table(self, bonds_list: list[BondInfo]):

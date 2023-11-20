@@ -124,6 +124,18 @@ class App(tk.Tk):
         
 
 
+    def test_sort(self, col, reverse):
+        # получаем все значения столбцов в виде отдельного списка
+        l = [(self.tree.set(k, col), k) for k in self.tree.get_children("")]
+        # сортируем список
+        l.sort(reverse=reverse)
+        # переупорядочиваем значения в отсортированном порядке
+        for index,  (_, k) in enumerate(l):
+            self.tree.move(k, "", index)
+        # в следующий раз выполняем сортировку в обратном порядке
+        self.tree.heading(col, command=lambda: self.test_sort(col, not reverse))
+
+
     def bonds_table(self, bonds_list: [BondStat]):
         # определяем заголовки
         self.tree.column("#1", stretch=tk.NO,width=230)
@@ -133,12 +145,12 @@ class App(tk.Tk):
         self.tree.column("#5", stretch=tk.NO,width=140)
         self.tree.column("#6", stretch=tk.NO,width=50)
 
-        self.tree.heading("name", text="Название")
-        self.tree.heading("count", text="Кол-во")
-        self.tree.heading("price", text="Цена")
-        self.tree.heading("pay", text="Платеж")
-        self.tree.heading("month", text="Мес")
-        self.tree.heading("percent", text="%")
+        self.tree.heading("name", text="Название", command=lambda: self.test_sort(0, False))
+        self.tree.heading("count", text="Кол-во", command=lambda: self.test_sort(1, False))
+        self.tree.heading("price", text="Цена", command=lambda: self.test_sort(2, False))
+        self.tree.heading("pay", text="Платеж", command=lambda: self.test_sort(3, False))
+        self.tree.heading("month", text="Мес", command=lambda: self.test_sort(4, False))
+        self.tree.heading("percent", text="%", command=lambda: self.test_sort(5, False))
 
         # добавляем данные
         self.tree.delete(*self.tree.get_children())
