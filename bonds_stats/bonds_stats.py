@@ -20,7 +20,7 @@ from matplotlib.backends.backend_tkagg import (
 
 config= configparser.ConfigParser()
 config.read('config.ini')
-
+import sqlalchemy
 
 os.environ["INVEST_TOKEN"]=config['DEFAULT']["TOKEN"]
 from tinkoff.invest.token import TOKEN
