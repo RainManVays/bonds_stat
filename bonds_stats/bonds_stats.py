@@ -10,7 +10,7 @@ from  BondClasses import *
 from tkinter import ttk
 from datetime import datetime, date
 from webbrowser import get
-from tinkoff.invest import Client, BondResponse, PortfolioResponse, PortfolioPosition, InstrumentIdType, GetBondCouponsResponse
+from tinkoff.invest import Client, BondResponse, PortfolioResponse, PortfolioPosition, InstrumentIdType, GetBondCouponsResponse, OperationState, OperationType
 import sys, os, configparser
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (
@@ -20,11 +20,9 @@ from matplotlib.backends.backend_tkagg import (
 
 config= configparser.ConfigParser()
 config.read('config.ini')
-import sqlalchemy
 
 os.environ["INVEST_TOKEN"]=config['DEFAULT']["TOKEN"]
 from tinkoff.invest.token import TOKEN
-
 
 
 
@@ -60,6 +58,7 @@ class App(tk.Tk):
         self.initLabels()
         
 
+        self.get_coupon_payments()
         bs = BondsScreener(self.bond_screener, TOKEN)
         BondInvestFacade(TOKEN).get_all_accounts()
         self.load_button.pack()
@@ -258,19 +257,25 @@ class App(tk.Tk):
         end_date = date(datetime.now().year,12,31)
         return datetime.combine(end_date, datetime.min.time())
 
+    def get_coupon_payments(self):
+        sum=0
+        with Client(TOKEN) as client:
+            operations = client.operations.get_operations(account_id=config['DEFAULT']["ACCOUNT_ID"],from_=self.get_start_date(), to=self.get_end_date(), state=OperationState(1))
+            for operation in operations.operations:
+                if operation.operation_type == OperationType(23):
+                    print(operation.payment.units)
+                    sum+=operation.payment.units
+        print(sum)
+
+
     def get_pay_dates(self):
         bond_pay_dates={}
         total_year_payment=0.0
         
-        
-
-
-
         bond_facade = BondInvestFacade(TOKEN)
         bonds_stat=[] 
         with Client(TOKEN) as client:
             accounts = client.users.get_accounts()
-            print(accounts)
             portfolio = client.operations.get_portfolio(account_id=config['DEFAULT']["ACCOUNT_ID"])
             for instrument in portfolio.positions:
                 if instrument.instrument_type=='bond':
