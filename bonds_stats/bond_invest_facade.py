@@ -1,7 +1,12 @@
+import configparser
 from datetime import date, datetime
 from BondClasses import BondStat, CouponInfo, BondInfo
-from tinkoff.invest import Client, BondResponse, PortfolioResponse, PortfolioPosition, InstrumentIdType, GetBondCouponsResponse
+from tinkoff.invest import Client, BondResponse, PortfolioResponse, PortfolioPosition, InstrumentIdType, GetBondCouponsResponse, OperationState, OperationType
 from time import sleep
+
+
+config= configparser.ConfigParser()
+config.read('config.ini')
 
 class BondInvestFacade:
 
@@ -56,3 +61,17 @@ class BondInvestFacade:
             for coupon in client.instruments.get_bond_coupons(figi=figi,from_= start_date, to=end_date).events:
                 coupons.append(CouponInfo(coupon=coupon, bond_figi=figi))
         return coupons
+    
+    def get_coupon_payments(self):
+        pay_result=[]
+        with Client(self.token) as client:
+            operations = client.operations.get_operations(account_id=config['DEFAULT']["ACCOUNT_ID"],from_=self.get_start_date(), to=self.get_end_date(), state=OperationState(1))
+            for operation in operations.operations:
+                if operation.operation_type == OperationType(23):
+                    figi=operation.figi
+                    pay_date = operation.date
+                    pay_sum = operation.payment.units
+                    pay_result.append([figi,pay_date,pay_sum])
+
+        return  pay_result
+        

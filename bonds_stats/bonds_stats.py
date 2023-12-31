@@ -4,13 +4,14 @@ import matplotlib.pyplot as plt
 from bond_invest_facade import BondInvestFacade
 
 from bonds_screener_view import BondsScreener
+from bond_payment_view import BondsPayment
 matplotlib.use('TkAgg')
 import calendar
 from  BondClasses import *
 from tkinter import ttk
 from datetime import datetime, date
 from webbrowser import get
-from tinkoff.invest import Client, BondResponse, PortfolioResponse, PortfolioPosition, InstrumentIdType, GetBondCouponsResponse, OperationState, OperationType
+from tinkoff.invest import Client, BondResponse, PortfolioResponse, PortfolioPosition, InstrumentIdType, GetBondCouponsResponse
 import sys, os, configparser
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (
@@ -43,13 +44,16 @@ class App(tk.Tk):
         self.notebook.pack(expand=True, fill=tk.BOTH)
         
         self.my_bond_frame = ttk.Frame(self.notebook)
+        self.bond_payment = ttk.Frame(self.notebook)
         self.bond_screener = ttk.Frame(self.notebook)
         
         self.my_bond_frame.pack(fill=tk.BOTH, expand=True)
+        self.bond_payment.pack(fill=tk.BOTH, expand=True)
         self.bond_screener.pack(fill=tk.BOTH, expand=True)
         
         # добавляем фреймы в качестве вкладок
         self.notebook.add(self.my_bond_frame, text="MyBond")
+        self.notebook.add(self.bond_payment, text="MyBondPayments")
         self.notebook.add(self.bond_screener, text="Bond Screener")
 
         self.load_button=ttk.Button(self.my_bond_frame,text="load statistic", command=self.plot_enable)
@@ -58,8 +62,8 @@ class App(tk.Tk):
         self.initLabels()
         
 
-        self.get_coupon_payments()
         bs = BondsScreener(self.bond_screener, TOKEN)
+        bp = BondsPayment(self.bond_payment, TOKEN)
         BondInvestFacade(TOKEN).get_all_accounts()
         self.load_button.pack()
         
@@ -209,10 +213,6 @@ class App(tk.Tk):
             self.coupon_total["text"]=f"TOTAL: {total_pay}"
             self.coupon_total["foreground"]=fg_color
 
-
-
-
-
     def coupon_label_clean(self):
         self.jan["text"]="jan"
         self.feb["text"]="feb"
@@ -229,9 +229,6 @@ class App(tk.Tk):
         self.coupon_total["text"]="TOTAL: "
         for item in self.frame_coupons.winfo_children():
             item["foreground"]="black"
-
-
-
 
 
     def plot_enable(self):
@@ -256,17 +253,6 @@ class App(tk.Tk):
     def get_end_date(self):
         end_date = date(datetime.now().year,12,31)
         return datetime.combine(end_date, datetime.min.time())
-
-    def get_coupon_payments(self):
-        sum=0
-        with Client(TOKEN) as client:
-            operations = client.operations.get_operations(account_id=config['DEFAULT']["ACCOUNT_ID"],from_=self.get_start_date(), to=self.get_end_date(), state=OperationState(1))
-            for operation in operations.operations:
-                if operation.operation_type == OperationType(23):
-                    print(operation.payment.units)
-                    sum+=operation.payment.units
-        print(sum)
-
 
     def get_pay_dates(self):
         bond_pay_dates={}
