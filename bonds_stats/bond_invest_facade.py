@@ -62,16 +62,22 @@ class BondInvestFacade:
                 coupons.append(CouponInfo(coupon=coupon, bond_figi=figi))
         return coupons
     
-    def get_coupon_payments(self):
+    def get_coupon_payments(self,date_start, date_end):
         pay_result=[]
+        if not date_start:
+            date_start= self.get_start_date()
+        if not date_end:
+            date_end=self.get_end_date()
         with Client(self.token) as client:
-            operations = client.operations.get_operations(account_id=config['DEFAULT']["ACCOUNT_ID"],from_=self.get_start_date(), to=self.get_end_date(), state=OperationState(1))
+            
+            operations = client.operations.get_operations(account_id=config['DEFAULT']["ACCOUNT_ID"],from_=date_start, to=date_end, state=OperationState(1))
             for operation in operations.operations:
                 if operation.operation_type == OperationType(23):
-                    figi=operation.figi
+                    
+                    bond_name = self.get_bond_name(operation.figi)
                     pay_date = operation.date
                     pay_sum = operation.payment.units
-                    pay_result.append([figi,pay_date,pay_sum])
+                    pay_result.append([bond_name,pay_date,pay_sum])
 
         return  pay_result
         
