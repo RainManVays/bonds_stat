@@ -43,13 +43,14 @@ class App(tk.Tk):
 
 
         accounts = self.bond_invest_facade.get_all_accounts()
+        self.current_account=""
         self.notebook = ttk.Notebook()
         self.notebook.pack(expand=True, fill=tk.BOTH)
         account_label = ttk.Label(self.notebook,text="Счёт: ", font=("Arial",13))
         #account_label.pack(expand=False,padx=400)
-        combobox = ttk.Combobox(self.notebook, values=accounts)
-        combobox.pack(expand=False,padx=600)
-        
+        self.combobox = ttk.Combobox(self.notebook, values=list(accounts.keys()))
+        self.combobox.pack(expand=False,padx=600)
+        self.combobox.bind("<<ComboboxSelected>>", self.account_selected)
         
 
 
@@ -87,7 +88,10 @@ class App(tk.Tk):
             plt.close(self.plot_figure)
         self.destroy()
 
-
+    def account_selected(self, event):
+        selection = self.combobox.get()
+        print(selection)
+        self.current_account=self.bond_invest_facade.get_account_id_on_name(selection)
 
     def initStatistic(self):
         self.frame_table = ttk.Frame(self.my_bond_frame, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=500)
@@ -275,7 +279,7 @@ class App(tk.Tk):
         bonds_stat=[] 
         with Client(TOKEN) as client:
             accounts = client.users.get_accounts()
-            portfolio = client.operations.get_portfolio(account_id=config['DEFAULT']["ACCOUNT_ID"])
+            portfolio = client.operations.get_portfolio(account_id=self.current_account)
             for instrument in portfolio.positions:
                 if instrument.instrument_type=='bond':
                     bond_name= bond_facade.get_bond_name(instrument.figi)
@@ -330,7 +334,7 @@ class App(tk.Tk):
                 if bond.name in bond_name:
                     bond_figi=bond.figi
                     break
-            portfolio = client.operations.get_portfolio(account_id=config['DEFAULT']["ACCOUNT_ID"])
+            portfolio = client.operations.get_portfolio(account_id=self.current_account)
             for instrument in portfolio.positions:
                 if instrument.figi==bond_figi:
                     for coupon in client.instruments.get_bond_coupons(figi=bond_figi,from_= self.get_start_date(), to=self.get_end_date()).events:

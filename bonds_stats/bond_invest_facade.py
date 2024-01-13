@@ -13,7 +13,7 @@ class BondInvestFacade:
     def __init__(self, token) -> None:
         self.token = token
         self.broker_bonds=[]
-        self.accounts=[]
+        self.accounts={}
 
 
     def get_bond_name(self, bond_figi):
@@ -43,10 +43,13 @@ class BondInvestFacade:
         with Client(self.token) as client:
             accounts = client.users.get_accounts()
             for acc in accounts.accounts:
-                self.accounts.append(acc)
+                self.accounts[acc.name]=acc.id
+                
         return self.accounts
     
-    
+    def get_account_id_on_name(self, account_name:str):
+        return self.accounts[account_name]
+
 
     def get_all_bonds(self):      
         bonds_stat=[] 
@@ -65,7 +68,7 @@ class BondInvestFacade:
                 coupons.append(CouponInfo(coupon=coupon, bond_figi=figi))
         return coupons
     
-    def get_coupon_payments(self,date_start, date_end):
+    def get_coupon_payments(self,current_account:str, date_start, date_end):
         pay_result=[]
         if not date_start:
             date_start= self.get_start_date()
@@ -73,7 +76,7 @@ class BondInvestFacade:
             date_end=self.get_end_date()
         with Client(self.token) as client:
             
-            operations = client.operations.get_operations(account_id=config['DEFAULT']["ACCOUNT_ID"],from_=date_start, to=date_end, state=OperationState(1))
+            operations = client.operations.get_operations(account_id=current_account,from_=date_start, to=date_end, state=OperationState(1))
             for operation in operations.operations:
                 if operation.operation_type == OperationType(23):
                     
