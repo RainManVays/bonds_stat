@@ -13,9 +13,8 @@ class BondInvestFacade:
     def __init__(self, token) -> None:
         self.token = token
         self.broker_bonds=[]
+        self.accounts=[]
 
-
-    
 
     def get_bond_name(self, bond_figi):
         if len(self.broker_bonds)>0:
@@ -39,11 +38,15 @@ class BondInvestFacade:
 
 
     def get_all_accounts(self):
+        if self.accounts:
+            return self.accounts
         with Client(self.token) as client:
             accounts = client.users.get_accounts()
             for acc in accounts.accounts:
-                print(acc)
-            
+                self.accounts.append(acc)
+        return self.accounts
+    
+    
 
     def get_all_bonds(self):      
         bonds_stat=[] 

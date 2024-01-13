@@ -39,13 +39,15 @@ class App(tk.Tk):
         self.title('Bonds Payment Stat')
         self.geometry("1400x800")
         self.protocol("WM_DELETE_WINDOW",self.exit)
+        self.bond_invest_facade = BondInvestFacade(TOKEN)
 
-        languages = ["Python", "C#", "Java", "JavaScript"]
+
+        accounts = self.bond_invest_facade.get_all_accounts()
         self.notebook = ttk.Notebook()
         self.notebook.pack(expand=True, fill=tk.BOTH)
         account_label = ttk.Label(self.notebook,text="Счёт: ", font=("Arial",13))
-        account_label.pack(expand=False,padx=400)
-        combobox = ttk.Combobox(self.notebook, values=languages)
+        #account_label.pack(expand=False,padx=400)
+        combobox = ttk.Combobox(self.notebook, values=accounts)
         combobox.pack(expand=False,padx=600)
         
         
@@ -74,7 +76,7 @@ class App(tk.Tk):
 
         bs = BondsScreener(self.bond_screener, TOKEN)
         bp = BondsPayment(self.bond_payment, TOKEN)
-        BondInvestFacade(TOKEN).get_all_accounts()
+        
         self.load_button.pack()
         
         
