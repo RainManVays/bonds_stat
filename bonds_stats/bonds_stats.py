@@ -36,24 +36,15 @@ class App(tk.Tk):
 
     def __init__(self):
         super().__init__()
-        self.title('Bonds Payment Stat')
+        self.title('Bonds Payment Statistic')
         self.geometry("1400x800")
         self.protocol("WM_DELETE_WINDOW",self.exit)
         self.bond_invest_facade = BondInvestFacade(TOKEN)
 
 
-        accounts = self.bond_invest_facade.get_all_accounts()
-        self.current_account=""
+        
         self.notebook = ttk.Notebook()
         self.notebook.pack(expand=True, fill=tk.BOTH)
-        account_label = ttk.Label(self.notebook,text="Счёт: ", font=("Arial",13))
-        #account_label.pack(expand=False,padx=400)
-        self.combobox = ttk.Combobox(self.notebook, values=list(accounts.keys()))
-        self.combobox.pack(expand=False,padx=600)
-        self.combobox.bind("<<ComboboxSelected>>", self.account_selected)
-        
-
-
 
 
         self.my_bond_frame = ttk.Frame(self.notebook)
@@ -70,6 +61,7 @@ class App(tk.Tk):
         self.notebook.add(self.bond_screener, text="Bond Screener")
 
         self.load_button=ttk.Button(self.my_bond_frame,text="load statistic", command=self.plot_enable)
+        self.init_accounts_combobox()
         self.initStatistic()
         self.initCoupons()
         self.initLabels()
@@ -88,10 +80,17 @@ class App(tk.Tk):
             plt.close(self.plot_figure)
         self.destroy()
 
+    def init_accounts_combobox(self):
+        accounts = self.bond_invest_facade.get_all_accounts()
+        self.current_account=""
+        self.account_list_combobox = ttk.Combobox(self.notebook, values=list(accounts.keys()))
+        self.account_list_combobox.pack(expand=False,padx=600)
+        self.account_list_combobox.bind("<<ComboboxSelected>>", self.account_selected)
+        
     def account_selected(self, event):
-        selection = self.combobox.get()
-        print(selection)
-        self.current_account=self.bond_invest_facade.get_account_id_on_name(selection)
+        selection = self.account_list_combobox.get()
+        account_id =self.bond_invest_facade.get_account_id_on_name(selection)
+        self.current_account=account_id
 
     def initStatistic(self):
         self.frame_table = ttk.Frame(self.my_bond_frame, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=500)
@@ -283,8 +282,6 @@ class App(tk.Tk):
             for instrument in portfolio.positions:
                 if instrument.instrument_type=='bond':
                     bond_name= bond_facade.get_bond_name(instrument.figi)
-                    
-                            
                     bonds_count = instrument.quantity.units
                     bond_actual_price=float(f"{instrument.current_price.units}.{instrument.current_price.nano}")
                     print(f"bond {bond_name} type {instrument.instrument_type} count {bonds_count} price {bond_actual_price:.2f}")
@@ -318,12 +315,6 @@ class App(tk.Tk):
 
         self.bond_result = bond_result
         return bond_result
-
-
-    def get_account_bonds(self):
-        pass
-
-
 
     def get_bond_coupons(self, bond_name:str):
         current_bond_coupons={}
@@ -366,13 +357,11 @@ class App(tk.Tk):
         if self.plot_figure:
             self.plot_figure.clear()
         self.plot_figure, ax = plt.subplots()
-
         figure_canvas= FigureCanvasTkAgg(self.plot_figure,self.frame_table)
-        
-        NavigationToolbar2Tk(figure_canvas,self)
+        NavigationToolbar2Tk(figure_canvas,self, pack_toolbar=False)
+
         hbars = ax.bar(x=month, height= counts, label=counts,color=bar_colors)
         ax.bar_label(hbars, fmt='%.0f')
-
         ax.set_ylabel('rub')
         ax.set_xlabel(f'total: {sum(counts):.2f}')
         ax.set_title('bond payments')

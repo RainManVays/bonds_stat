@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from bond_sql_data import BondSqlData
 from coupon_sql_data import CouponSqlData
 
-engine = create_engine("sqlite:///bonds/bonds_db.sqlite", echo=True)
+engine = create_engine("sqlite:///bonds_db.sqlite", echo=True)
 
 Session = sessionmaker(bind=engine)
 

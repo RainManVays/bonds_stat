@@ -3,7 +3,11 @@ from datetime import date, datetime
 from BondClasses import BondStat, CouponInfo, BondInfo
 from tinkoff.invest import Client, BondResponse, PortfolioResponse, PortfolioPosition, InstrumentIdType, GetBondCouponsResponse, OperationState, OperationType
 from time import sleep
+from bond_sql_data import BondSqlData
 
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 config= configparser.ConfigParser()
 config.read('config.ini')
@@ -14,6 +18,7 @@ class BondInvestFacade:
         self.token = token
         self.broker_bonds=[]
         self.accounts={}
+        self.engine = create_engine("sqlite:///bonds_db.sqlite")
 
 
     def get_bond_name(self, bond_figi):
@@ -51,8 +56,46 @@ class BondInvestFacade:
         return self.accounts[account_name]
 
 
+    def get_bonds_from_tcs(self):
+        black_list_invalid_bonds =['BBG001CYCG37','TCS878009866']
+        print('get bonds from TCS')
+        with Client(self.token) as client:
+            bonds_sql_list=[]
+            for bond in client.instruments.bonds().instruments:
+                if bond.figi in black_list_invalid_bonds:
+                    continue
+                bonds_sql_list.append(BondSqlData(bond))
+                print(f"{bond.name} {bond.coupon_quantity_per_year}")
+            print(f'TCS bonds count {len(bonds_sql_list)}')
+            return bonds_sql_list
+
+
+
+    def update_db_bonds(self,engine):
+        print('update bonds')
+        Session = sessionmaker(bind=engine)
+        BondSqlData(None).create_tables(engine)
+        s = Session()
+        db_bonds = [figi[0] for figi in s.query(BondSqlData.figi)]
+        if len(db_bonds)==0:
+            print('0 bonds in database add all bonds from tcs')
+            tcs_bonds=self.get_bonds_from_tcs()
+            s.add_all(tcs_bonds)
+            s.commit()
+            s.close()
+            return
+
+        for tcs_bond in tcs_bonds:
+            if tcs_bond.figi not in db_bonds:
+                s.add(BondSqlData(tcs_bond))
+                print(f'append new bond {tcs_bond.name}  date rep: {tcs_bond.state_reg_date}')
+            s.commit()
+            s.close()
+
+
     def get_all_bonds(self):      
         bonds_stat=[] 
+        self.update_db_bonds(self.engine)
         with Client(self.token) as client:
             bonds = client.instruments.bonds().instruments
             for bond in bonds:
