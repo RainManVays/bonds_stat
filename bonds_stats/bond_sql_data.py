@@ -1,11 +1,12 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Table,Column, Integer,String, Boolean,MetaData, BigInteger, ForeignKey, Numeric
+from sqlalchemy import Table,Column, Integer,String, Boolean,MetaData, BigInteger, ForeignKey, Numeric, DateTime
 from tinkoff.invest import Bond
-
+from datetime import datetime
 Base = declarative_base()
 class BondSqlData(Base):
     __tablename__='bond'
     figi =  Column(String, primary_key=True,  doc='Figi-идентификатор инструмента.')
+    date_insert =  Column(DateTime, primary_key=True,  doc='Дата добавления инструмента в базу')
     ticker =  Column(String,  doc='Тикер инструмента.')
     class_code =  Column(String,  doc='Класс-код (секция торгов).')
     isin =  Column(String,  doc='Isin-идентификатор инструмента.')
@@ -48,6 +49,7 @@ class BondSqlData(Base):
         if not bond_data:
             return
         self.figi= bond_data.figi
+        self.date_insert = datetime.now()
         self.ticker= bond_data.ticker
         self.class_code= bond_data.class_code
         self.isin= bond_data.isin
