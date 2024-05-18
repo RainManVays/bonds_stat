@@ -18,7 +18,6 @@ from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg,
     NavigationToolbar2Tk
 )
-
 config= configparser.ConfigParser()
 config.read('config.ini')
 
@@ -42,7 +41,6 @@ class App(tk.Tk):
         self.bond_invest_facade = BondInvestFacade(TOKEN)
 
 
-        
         self.notebook = ttk.Notebook()
         self.notebook.pack(expand=True, fill=tk.BOTH)
 
@@ -82,7 +80,6 @@ class App(tk.Tk):
 
     def init_accounts_combobox(self):
         accounts = self.bond_invest_facade.get_all_accounts()
-        self.current_account=""
         self.account_list_combobox = ttk.Combobox(self.notebook, values=list(accounts.keys()))
         self.account_list_combobox.pack(expand=False,padx=600)
         self.account_list_combobox.bind("<<ComboboxSelected>>", self.account_selected)
@@ -91,6 +88,7 @@ class App(tk.Tk):
         selection = self.account_list_combobox.get()
         account_id =self.bond_invest_facade.get_account_id_on_name(selection)
         self.current_account=account_id
+        self.bond_invest_facade.set_current_account(account_id)
 
     def initStatistic(self):
         self.frame_table = ttk.Frame(self.my_bond_frame, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=500)
@@ -278,7 +276,7 @@ class App(tk.Tk):
         bonds_stat=[] 
         with Client(TOKEN) as client:
             accounts = client.users.get_accounts()
-            portfolio = client.operations.get_portfolio(account_id=self.current_account)
+            portfolio = client.operations.get_portfolio(account_id=self.bond_invest_facade.get_current_account())
             for instrument in portfolio.positions:
                 if instrument.instrument_type=='bond':
                     bond_name= bond_facade.get_bond_name(instrument.figi)
@@ -325,7 +323,7 @@ class App(tk.Tk):
                 if bond.name in bond_name:
                     bond_figi=bond.figi
                     break
-            portfolio = client.operations.get_portfolio(account_id=self.current_account)
+            portfolio = client.operations.get_portfolio(account_id=self.bond_invest_facade.get_current_account())
             for instrument in portfolio.positions:
                 if instrument.figi==bond_figi:
                     for coupon in client.instruments.get_bond_coupons(figi=bond_figi,from_= self.get_start_date(), to=self.get_end_date()).events:

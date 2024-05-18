@@ -1,0 +1,7 @@
+{
+    "python.globalModuleInstallation": true,
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.terminal.launchArgs": [
+        
+    ]
+}

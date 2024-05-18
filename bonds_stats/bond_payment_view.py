@@ -56,11 +56,14 @@ class BondsPayment():
 
 
     def bonds_payment_table(self, payment_list):
+        payment_sum=0
         for payment in payment_list:
             self.bond_payment_table.insert("", tk.END, values=(payment[0],payment[1],payment[2]))
+            payment_sum+=int(payment[2])
+        self.bond_payment_table.insert("", tk.END, values=("ВСЕГО: ","",payment_sum))
 
     def bond_payment_enable(self):
-        self.bonds_payment_table(self.bond_facade.get_coupon_payments())
+        self.bonds_payment_table(self.bond_facade.get_coupon_payments(self.bond_facade.get_current_account(),self.bond_facade.get_start_date(),self.bond_facade.get_end_date()))
 
     def bond_selected(self):
         pass

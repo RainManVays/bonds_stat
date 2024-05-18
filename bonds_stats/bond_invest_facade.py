@@ -14,6 +14,8 @@ config.read('config.ini')
 
 class BondInvestFacade:
 
+    CURRENT_ACCOUNT=""
+    
     def __init__(self, token) -> None:
         self.token = token
         self.broker_bonds=[]
@@ -24,13 +26,13 @@ class BondInvestFacade:
     def get_bond_name(self, bond_figi):
         if len(self.broker_bonds)>0:
             for bond in self.broker_bonds:
-                if bond.figi == bond_figi:
+                if bond_figi in bond.figi:
                     return bond.name
                 
         with Client(self.token) as client:
             self.broker_bonds = client.instruments.bonds().instruments
             for bond in self.broker_bonds:
-                if bond.figi == bond_figi:
+                if bond_figi in bond.figi:
                     return bond.name
 
     def get_start_date(self):
@@ -54,6 +56,12 @@ class BondInvestFacade:
     
     def get_account_id_on_name(self, account_name:str):
         return self.accounts[account_name]
+    
+    def get_current_account(self):
+        return BondInvestFacade.CURRENT_ACCOUNT
+    
+    def set_current_account(self,current_account):
+        BondInvestFacade.CURRENT_ACCOUNT=current_account
 
 
     def get_bonds_from_tcs(self):
@@ -160,6 +168,7 @@ class BondInvestFacade:
         with Client(self.token) as client:
             
             operations = client.operations.get_operations(account_id=current_account,from_=date_start, to=date_end, state=OperationState(1))
+            
             for operation in operations.operations:
                 if operation.operation_type == OperationType(23):
                     
