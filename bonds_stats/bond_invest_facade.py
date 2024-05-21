@@ -8,7 +8,7 @@ from coupon_sql_data import CouponSqlData
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
+from datetime import datetime
 config= configparser.ConfigParser()
 config.read('config.ini')
 
@@ -28,12 +28,13 @@ class BondInvestFacade:
             for bond in self.broker_bonds:
                 if bond_figi in bond.figi:
                     return bond.name
-                
-        with Client(self.token) as client:
-            self.broker_bonds = client.instruments.bonds().instruments
-            for bond in self.broker_bonds:
-                if bond_figi in bond.figi:
-                    return bond.name
+        else:
+            with Client(self.token) as client:
+                self.broker_bonds = client.instruments.bonds().instruments
+                for bond in self.broker_bonds:
+                    if bond_figi in bond.figi:
+                        return bond.name
+                    
 
     def get_start_date(self):
         start_date = date(datetime.now().year,1,1)
@@ -176,6 +177,6 @@ class BondInvestFacade:
                     pay_date = operation.date
                     pay_sum = operation.payment.units
                     pay_result.append([bond_name,pay_date,pay_sum])
-
+        pay_result.sort(key=lambda x: x[1])
         return  pay_result
         

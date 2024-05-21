@@ -3,7 +3,8 @@ import tkinter as tk
 
 from BondClasses import BondStat, BondInfo
 from bond_invest_facade import BondInvestFacade
-
+from datetime import datetime
+import calendar
 class BondsPayment():
 
     def __init__(self, parent_frame: ttk.Frame, token) -> None:
@@ -57,7 +58,17 @@ class BondsPayment():
 
     def bonds_payment_table(self, payment_list):
         payment_sum=0
+        payment_month_sum=0
+        payment_month_temp=1
         for payment in payment_list:
+            
+            payment_month_sum+=int(payment[2])
+            if payment[1].month>payment_month_temp:
+                self.bond_payment_table.insert("", tk.END, values=(calendar.month_name[payment_month_temp],payment_month_sum,""))
+                
+                payment_month_temp=payment[1].month
+                payment_month_sum=0
+                
             self.bond_payment_table.insert("", tk.END, values=(payment[0],payment[1],payment[2]))
             payment_sum+=int(payment[2])
         self.bond_payment_table.insert("", tk.END, values=("ВСЕГО: ","",payment_sum))
