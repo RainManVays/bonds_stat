@@ -30,7 +30,7 @@ class BondsScreener():
         screener_tree.bind("<<TreeviewSelect>>",self.bond_selected)
         screener_tree.place(width=1350,height=680,x=0, y=0)
         screener_tree.column("#1", stretch=tk.NO,width=230)
-        screener_tree.column("#2", stretch=tk.NO,width=80)
+        screener_tree.column("#2", stretch=tk.NO,width=70)
         screener_tree.column("#3", stretch=tk.NO,width=70)
         screener_tree.column("#4", stretch=tk.NO,width=100)
         screener_tree.column("#5", stretch=tk.NO,width=110)
@@ -48,8 +48,8 @@ class BondsScreener():
         screener_tree.heading("coupon", text="купон", command=lambda: self.test_sort(5, False))
         screener_tree.heading("period", text="период", command=lambda: self.test_sort(6, False))
         screener_tree.heading("duration", text="дюрация", command=lambda: self.test_sort(7, False))
-        screener_tree.heading("amortization", text="амортизация", command=lambda: self.test_sort(8, False))
-        screener_tree.heading("static coupon", text="фикс купон", command=lambda: self.test_sort(9, False))
+        screener_tree.heading("amortization", text="аморт", command=lambda: self.test_sort(8, False))
+        screener_tree.heading("static coupon", text="фикс купн", command=lambda: self.test_sort(9, False))
         #bond_screener_progess = ttk.Progressbar(frame,orient="horizontal", length=300, variable=self.progress_var)
         #bond_screener_progess.place(width=800,height=10,x=320, y=720)
         bond_screener_button=ttk.Button(frame,text="load data", command=self.bond_screener_enable)
@@ -71,7 +71,7 @@ class BondsScreener():
 
     def bonds_screener_table(self, bonds_list: list[BondInfo]):
         for bond in bonds_list:
-            self.bond_screener_table.insert("", tk.END, values=(bond.bond_name,bond.bond_end_date,bond.bond_curr_price,bond.bond_month_payments, bond.percent,bond.bond_coupon))
+            self.bond_screener_table.insert("", tk.END, values=(bond.bond_name,bond.bond_end_date.strftime("%Y-%m"),bond.bond_curr_price,bond.bond_month_payments, bond.percent,bond.bond_coupon,bond.pay_period,"дюр",bond.amortization,bond.fix_coupon))
 
     def bond_screener_enable(self):
         self.bonds_screener_table(self.bond_facade.get_all_bonds())

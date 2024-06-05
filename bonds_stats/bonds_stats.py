@@ -92,9 +92,9 @@ class App(tk.Tk):
 
     def initStatistic(self):
         self.frame_table = ttk.Frame(self.my_bond_frame, borderwidth=1, relief=tk.SOLID, padding=[8, 10],width=1400,height=500)
-        self.tree = ttk.Treeview(self.frame_table, columns=("name","count","price","pay","month","percent"), show="headings")
+        self.tree = ttk.Treeview(self.frame_table, columns=("name","count","price","pay","month","percent","end_date"), show="headings")
         self.tree.bind("<<TreeviewSelect>>",self.bond_selected)
-        self.tree.place(width=650,height=480,x=710, y=0)
+        self.tree.place(width=730,height=480,x=640, y=0)
         self.frame_table.pack(anchor=tk.NW, fill=tk.X, padx=5, pady=5)
 
     def initCoupons(self):
@@ -161,6 +161,7 @@ class App(tk.Tk):
         self.tree.column("#4", stretch=tk.NO,width=100)
         self.tree.column("#5", stretch=tk.NO,width=140)
         self.tree.column("#6", stretch=tk.NO,width=50)
+        self.tree.column("#7", stretch=tk.NO,width=70)
 
         self.tree.heading("name", text="Название", command=lambda: self.test_sort(0, False))
         self.tree.heading("count", text="Кол-во", command=lambda: self.test_sort(1, False))
@@ -168,13 +169,14 @@ class App(tk.Tk):
         self.tree.heading("pay", text="Платеж", command=lambda: self.test_sort(3, False))
         self.tree.heading("month", text="Мес", command=lambda: self.test_sort(4, False))
         self.tree.heading("percent", text="%", command=lambda: self.test_sort(5, False))
+        self.tree.heading("end_date", text="end_date", command=lambda: self.test_sort(6, False))
 
         # добавляем данные
         self.tree.delete(*self.tree.get_children())
         for bond in bonds_list:
             month_cnt= 12 if "All" in bond.months else len(bond.months)
             percent = f"{(bond.next_pay/bond.bonds_count*(month_cnt)/bond.bond_curr_price*100):.2f}"
-            self.tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months,percent))
+            self.tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months,percent,bond.bond_end_date))
 
 
     def bond_selected(self,event):
@@ -250,7 +252,7 @@ class App(tk.Tk):
             self.plot_widget.delete(self.plot_widget.children)
         
         self.plot_widget= self.bond_plot().get_tk_widget()
-        self.plot_widget.place(width=700,x=0)
+        self.plot_widget.place(width=630,x=0)
         
         self.total_payment["text"]=(self.bond_result.total_money)
         self.avg_roi["text"]=(self.bond_result.avg_roi)
@@ -304,7 +306,8 @@ class App(tk.Tk):
                                                 bond_curr_price=float(f"{instrument.current_price.units}.{instrument.current_price.nano}"),
                                                 next_pay=total_month_pay,
                                                 coupons=current_bond_coupons,
-                                                months=bond_payment_months))
+                                                months=bond_payment_months,
+                                                end_date=bond_facade.get_bond_maturity_date(instrument.figi).strftime("%Y-%m")))
         bond_result = BondPayResults(total_amount_bonds=portfolio.total_amount_bonds.units,
                                     total_year_payment=total_year_payment,
                                     count_bonds=portfolio.total_amount_bonds.units,

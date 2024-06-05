@@ -1,5 +1,6 @@
 import configparser
 from datetime import date, datetime
+import time
 from BondClasses import BondStat, CouponInfo, BondInfo
 from tinkoff.invest import Client, BondResponse, PortfolioResponse, PortfolioPosition, InstrumentIdType, GetBondCouponsResponse, OperationState, OperationType
 from time import sleep
@@ -35,6 +36,18 @@ class BondInvestFacade:
                     if bond_figi in bond.figi:
                         return bond.name
                     
+    def get_bond_maturity_date(self, bond_figi):
+        if len(self.broker_bonds)>0:
+            for bond in self.broker_bonds:
+                if bond_figi in bond.figi:
+                    return bond.maturity_date
+        else:
+            with Client(self.token) as client:
+                self.broker_bonds = client.instruments.bonds().instruments
+                for bond in self.broker_bonds:
+                    if bond_figi in bond.figi:
+                        return bond.maturity_date
+
 
     def get_start_date(self):
         start_date = date(datetime.now().year,1,1)
@@ -85,10 +98,11 @@ class BondInvestFacade:
         Session = sessionmaker(bind=engine)
         BondSqlData(None).create_tables(engine)
         s = Session()
+        tcs_bonds=self.get_bonds_from_tcs()
         db_bonds = [figi[0] for figi in s.query(BondSqlData.figi)]
         if len(db_bonds)==0:
             print('0 bonds in database add all bonds from tcs')
-            tcs_bonds=self.get_bonds_from_tcs()
+            
             s.add_all(tcs_bonds)
             s.commit()
             s.close()
@@ -104,6 +118,16 @@ class BondInvestFacade:
 
 
     def get_coupon_from_tcs(self,bond_figi:str,start_date=datetime(1970,1,1,1,1,1,1), end_date=datetime(2050,1,1,1,1,1)):
+        
+        self.update_db_coupons(self.engine,[bond_figi])
+        
+        
+        Session = sessionmaker(bind=self.engine)
+        s = Session()
+        db_coupons = [coupon[0] for coupon in s.query(CouponSqlData.figi)]
+        
+        
+        
         coupon_sql_list=[]
         with Client(self.token) as client:
             print(f'get coupon for figi: {bond_figi}')
@@ -129,7 +153,7 @@ class BondInvestFacade:
                 except Exception as ex:
                     print("TCS cry abour rate limit, wait 60 sec and repeat")
                     print(ex)
-                    #time.sleep(60)
+                    time.sleep(60)
                     exc_count+=1
                     if exc_count>=10:
                         raise Exception('count TCS rate limit errors more than 10, stop working')
@@ -137,13 +161,13 @@ class BondInvestFacade:
             s.add_all(coupons)
             print(f'add new coupons in bond {figi}')
             s.commit()
-            #time.sleep(15)
+            time.sleep(15)
         s.close()
 
 
     def get_all_bonds(self):      
         bonds_stat=[] 
-        self.update_db_bonds(self.engine)
+        #self.update_db_bonds(self.engine)
         with Client(self.token) as client:
             bonds = client.instruments.bonds().instruments
             for bond in bonds:
