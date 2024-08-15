@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Numeric, BigInteger, DateTime
 from sqlalchemy.orm import relationship
-from .database import Base
+from database import Base
 from tinkoff.invest import Bond, Coupon
 from datetime import datetime
 

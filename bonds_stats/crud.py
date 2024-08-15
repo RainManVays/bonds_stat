@@ -1,5 +1,5 @@
-from .models import BondSqlData, CouponSqlData
-from .database import SessionLocal
+from models import BondSqlData, CouponSqlData
+from database import SessionLocal
 
 
 

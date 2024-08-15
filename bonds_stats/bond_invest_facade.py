@@ -4,9 +4,7 @@ import time
 from BondClasses import BondStat, CouponInfo, BondInfo
 from tinkoff.invest import Client, BondResponse, PortfolioResponse, PortfolioPosition, InstrumentIdType, GetBondCouponsResponse, OperationState, OperationType
 from time import sleep
-from bond_sql_data import BondSqlData
-from coupon_sql_data import CouponSqlData
-
+from models import BondSqlData, CouponSqlData
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
