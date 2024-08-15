@@ -179,56 +179,45 @@ class App(tk.Tk):
             self.tree.insert("", tk.END, values=(bond.bond_name,bond.bonds_count,bond.bond_curr_price, bond.next_pay, bond.months,percent,bond.bond_end_date))
 
 
-    def bond_selected(self,event):
+    def bond_selected(self, event):
         for bond in self.tree.selection():
             item = self.tree.item(bond)
+            bond_id = item["values"][0]
             coupon_count = item["values"][1]
-            coupons= self.get_bond_coupons(item["values"][0])
+            coupons = self.get_bond_coupons(bond_id)
 
             self.coupon_label_clean()
-            fg_color="green"
-            total_pay=0.0
-            for key,value in coupons.items():
-                total_pay+=value*coupon_count
-                if key.month == 1:
-                    self.jan["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
-                    self.jan["foreground"]=fg_color
-                elif key.month==2:
-                    self.feb["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
-                    self.feb["foreground"]=fg_color
-                elif key.month==3:
-                    self.mar["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
-                    self.mar["foreground"]=fg_color
-                elif key.month==4:
-                    self.apr["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
-                    self.apr["foreground"]=fg_color
-                elif key.month==5:
-                    self.may["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
-                    self.may["foreground"]=fg_color
-                elif key.month==6:
-                    self.jun["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
-                    self.jun["foreground"]=fg_color
-                elif key.month==7:
-                    self.jul["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
-                    self.jul["foreground"]=fg_color
-                elif key.month==8:
-                    self.aug["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
-                    self.aug["foreground"]=fg_color
-                elif key.month==9:
-                    self.sep["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
-                    self.sep["foreground"]=fg_color
-                elif key.month==10:
-                    self.oct["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
-                    self.oct["foreground"]=fg_color
-                elif key.month==11:
-                    self.nov["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
-                    self.nov["foreground"]=fg_color
-                elif key.month==12:
-                    self.dec["text"]=f"{calendar.month_abbr[key.month]} {value*coupon_count}"
-                    self.dec["foreground"]=fg_color
-            self.coupon_total["text"]=f"TOTAL: {total_pay}"
-            self.coupon_total["foreground"]=fg_color
+            fg_color = "green"
+            total_pay = 0.0
 
+            month_labels = {
+                1: self.jan,
+                2: self.feb,
+                3: self.mar,
+                4: self.apr,
+                5: self.may,
+                6: self.jun,
+                7: self.jul,
+                8: self.aug,
+                9: self.sep,
+                10: self.oct,
+                11: self.nov,
+                12: self.dec,
+            }
+
+            for month, value in coupons.items():
+                payment = value * coupon_count
+                total_pay += payment
+
+                label = month_labels.get(month.month)
+                if label:
+                    label["text"] = f"{calendar.month_abbr[month.month]} {payment}"
+                    label["foreground"] = fg_color
+
+            self.coupon_total["text"] = f"TOTAL: {total_pay}"
+            self.coupon_total["foreground"] = fg_color
+        
+        
     def coupon_label_clean(self):
         self.jan["text"]="jan"
         self.feb["text"]="feb"

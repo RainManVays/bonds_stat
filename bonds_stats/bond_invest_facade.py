@@ -124,8 +124,15 @@ class BondInvestFacade:
         
         Session = sessionmaker(bind=self.engine)
         s = Session()
-        db_coupons = [coupon[0] for coupon in s.query(CouponSqlData.figi)]
-        
+        db_coupons = [coupon for coupon in s.query(CouponSqlData)]
+        """
+        сделать
+        получаем купоны из базы
+        если купонов 0
+        получаем фулл из ткс пишем в базу
+        если date_insert больше чем сутки, обновляем на дельту в сутки
+    
+        """
         
         
         coupon_sql_list=[]
