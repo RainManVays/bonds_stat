@@ -5,7 +5,7 @@ from tinkoff.invest import Bond, Coupon
 from datetime import datetime
 
 class BondSqlData(Base):
-    __tablename__='bond'
+    __tablename__ = 'bond'
     figi =  Column(String, primary_key=True,  doc='Figi-идентификатор инструмента.')
     date_insert =  Column(DateTime, primary_key=True,  doc='Дата добавления инструмента в базу')
     ticker =  Column(String,  doc='Тикер инструмента.')

@@ -2,6 +2,7 @@ import configparser
 from datetime import date, datetime
 import time
 from BondClasses import BondStat, CouponInfo, BondInfo
+import crud
 from tinkoff.invest import Client, BondResponse, PortfolioResponse, PortfolioPosition, InstrumentIdType, GetBondCouponsResponse, OperationState, OperationType
 from time import sleep
 from models import BondSqlData, CouponSqlData
@@ -170,15 +171,42 @@ class BondInvestFacade:
         s.close()
 
 
-    def get_all_bonds(self):      
+    def get_all_bonds_d(self):      
         bonds_stat=[] 
         #self.update_db_bonds(self.engine)
         with Client(self.token) as client:
+            
             bonds = client.instruments.bonds().instruments
+            
             for bond in bonds:
                 bonds_stat.append(BondInfo(bond,self.get_bond_coupon(bond.figi,self.get_start_date(), self.get_end_date())))
 
         return bonds_stat
+
+
+#добавить date_update, date_insert, если date_insert\update старше чем сутки- обновить таблицу бондов
+
+    def get_all_bonds(self):      
+        bonds_stat=[] 
+        #self.update_db_bonds(self.engine)
+        
+        #bonds=crud.get_all_bonds()
+        bonds=None
+        if not bonds:
+            with Client(self.token) as client:
+                
+                bonds = client.instruments.bonds().instruments
+                for bond in bonds:
+                    crud.create_bond(bond)
+                
+                for bond in bonds:
+                    bonds_stat.append(BondInfo(bond,None))#self.get_bond_coupon(bond.figi,self.get_start_date(), self.get_end_date())))
+
+        return bonds_stat
+
+
+
+
 
     def get_bond_coupon(self, figi:str, start_date, end_date) -> list:
         #self.update_db_coupons()

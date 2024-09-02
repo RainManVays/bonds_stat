@@ -1,13 +1,14 @@
 from models import BondSqlData, CouponSqlData
 from database import SessionLocal
+from tinkoff.invest.schemas import Bond
 
 
 
 # Create
-def create_bond(bond_data: dict) -> BondSqlData:
+def create_bond(bond_data: Bond) -> BondSqlData:
     session = SessionLocal()
     try:
-        bond = BondSqlData(**bond_data)
+        bond = BondSqlData(bond_data)
         session.add(bond)
         session.commit()
         session.refresh(bond)
@@ -94,7 +95,7 @@ def get_coupon(figi: str, coupon_date: str) -> CouponSqlData:
     ).first()
 
 # Read (get all coupons)
-def get_all_coupons(db: Session) -> list[CouponSqlData]:
+def get_all_coupons() -> list[CouponSqlData]:
     session = SessionLocal()
     return session.query(CouponSqlData).all()
 

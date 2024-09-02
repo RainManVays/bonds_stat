@@ -3,6 +3,7 @@ import tkinter as tk
 
 from BondClasses import BondStat, BondInfo
 from bond_invest_facade import BondInvestFacade
+from database import init_db
 
 class BondsScreener():
 
@@ -74,6 +75,7 @@ class BondsScreener():
             self.bond_screener_table.insert("", tk.END, values=(bond.bond_name,bond.bond_end_date.strftime("%Y-%m"),bond.bond_curr_price,bond.bond_month_payments, bond.percent,bond.bond_coupon,bond.pay_period,"дюр",bond.amortization,bond.fix_coupon))
 
     def bond_screener_enable(self):
+        init_db()
         self.bonds_screener_table(self.bond_facade.get_all_bonds())
 
     def bond_selected(self):
