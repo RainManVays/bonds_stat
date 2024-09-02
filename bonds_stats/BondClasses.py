@@ -4,7 +4,8 @@ import share_methods as sm
 from tinkoff.invest.schemas import BondResponse, Coupon, PortfolioPosition, Bond
 
 class BondStat:
-    def __init__(self, bond_name, bonds_count, bond_curr_price:float, next_pay: float, coupons:dict, months: list,end_date:str) -> None:
+    def __init__(self, bond_figi, bond_name, bonds_count, bond_curr_price:float, next_pay: float, coupons:dict, months: list,end_date:str) -> None:
+        self.bond_figi=bond_figi
         self.bond_name=bond_name
         self.bonds_count=bonds_count
         self.bond_curr_price=bond_curr_price

@@ -192,9 +192,9 @@ class BondInvestFacade:
     def get_coupon_payments(self,current_account:str, date_start, date_end):
         pay_result=[]
         if not date_start:
-            date_start= self.get_start_date()
+            date_start = self.get_start_date()
         if not date_end:
-            date_end=self.get_end_date()
+            date_end = self.get_end_date()
         with Client(self.token) as client:
             
             operations = client.operations.get_operations(account_id=current_account,from_=date_start, to=date_end, state=OperationState(1))

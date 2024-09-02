@@ -28,7 +28,7 @@ class BondsPayment():
 
     def __init_bond_payment(self, frame: ttk.Frame) -> ttk.Treeview:
         payment_tree = ttk.Treeview(frame, columns=("name","payment_date","pay_summ"), show="headings")
-        payment_tree.bind("<<TreeviewSelect>>",self.bond_selected)
+        payment_tree.bind("<<TreeviewSelect>>")#,self.bond_selected)
         payment_tree.place(width=1350,height=680,x=0, y=0)
         payment_tree.column("#1", stretch=tk.NO,width=230)
         payment_tree.column("#2", stretch=tk.NO,width=250)
@@ -56,22 +56,53 @@ class BondsPayment():
         self.bond_payment_table.heading(col, command=lambda: self.test_sort(col, not reverse))
 
 
-    def bonds_payment_table(self, payment_list):
+    def bonds_payment_table_b(self, payment_list):
         payment_sum=0
         payment_month_sum=0
         payment_month_temp=1
         for payment in payment_list:
-            
-            payment_month_sum+=int(payment[2])
+
             if payment[1].month>payment_month_temp:
-                self.bond_payment_table.insert("", tk.END, values=(calendar.month_name[payment_month_temp],payment_month_sum,""))
-                
+                self.bond_payment_table.insert("", tk.END, values=("",calendar.month_name[payment_month_temp],payment_month_sum))
                 payment_month_temp=payment[1].month
                 payment_month_sum=0
-                
+            else:
+                print(f"payment source: {payment}")
+                payment_month_sum+=int(payment[2])
+                print(f"payment month sum: {payment_month_sum}")
             self.bond_payment_table.insert("", tk.END, values=(payment[0],payment[1],payment[2]))
             payment_sum+=int(payment[2])
         self.bond_payment_table.insert("", tk.END, values=("ВСЕГО: ","",payment_sum))
+        
+    def bonds_payment_table(self, payment_list):
+            payment_sum = 0
+            payment_month_sum = 0
+            payment_month_temp = payment_list[0][1].month if payment_list else 1  # Начинаем с месяца первого платежа
+            
+            for payment in payment_list:
+                current_month = payment[1].month
+                
+                if current_month > payment_month_temp:
+                    # Добавляем сумму за предыдущий месяц перед переходом к следующему
+                    self.bond_payment_table.insert("", tk.END, values=("", calendar.month_name[payment_month_temp], f"    {payment_month_sum}"))
+                    
+                    payment_month_temp = current_month
+                    payment_month_sum = 0  # Обнуляем сумму для нового месяца
+                
+                payment_month_sum += int(payment[2])
+                payment_sum += int(payment[2])
+
+                self.bond_payment_table.insert("", tk.END, values=(payment[0], payment[1].strftime('%d-%m-%Y'), payment[2]))
+
+            # Добавляем данные последнего месяца
+            self.bond_payment_table.insert("", tk.END, values=("", calendar.month_name[payment_month_temp], payment_month_sum))
+            
+            # Добавляем итоговую сумму
+            self.bond_payment_table.insert("", tk.END, values=("ВСЕГО: ", "", payment_sum))
+
+            print(f"Итоговая сумма выплат: {payment_sum}")
+
+
 
     def bond_payment_enable(self):
         self.bonds_payment_table(self.bond_facade.get_coupon_payments(self.bond_facade.get_current_account(),self.bond_facade.get_start_date(),self.bond_facade.get_end_date()))

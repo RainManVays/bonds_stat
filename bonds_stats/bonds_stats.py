@@ -181,15 +181,17 @@ class App(tk.Tk):
 
     def bond_selected(self, event):
         for bond in self.tree.selection():
+            print(f"selected bond {bond}")
             item = self.tree.item(bond)
             bond_id = item["values"][0]
             coupon_count = item["values"][1]
-            coupons = self.get_bond_coupons(bond_id)
-
+            print(f'bond id {bond_id}')
+            coupons =self.get_figi_bond_coupons(self.get_bond_figi_on_name(bond_id))
+            print(f"bond coupons {coupons}")
             self.coupon_label_clean()
             fg_color = "green"
             total_pay = 0.0
-
+            self.bond_result
             month_labels = {
                 1: self.jan,
                 2: self.feb,
@@ -206,6 +208,7 @@ class App(tk.Tk):
             }
 
             for month, value in coupons.items():
+                print(f"month {month} value {value}")
                 payment = value * coupon_count
                 total_pay += payment
 
@@ -266,7 +269,6 @@ class App(tk.Tk):
         bond_facade = BondInvestFacade(TOKEN)
         bonds_stat=[] 
         with Client(TOKEN) as client:
-            accounts = client.users.get_accounts()
             portfolio = client.operations.get_portfolio(account_id=self.bond_invest_facade.get_current_account())
             for instrument in portfolio.positions:
                 if instrument.instrument_type=='bond':
@@ -290,7 +292,7 @@ class App(tk.Tk):
                             bond_pay_dates[coupon_month]=total_month_pay
                         total_year_payment+=total_month_pay
                         current_bond_coupons["coupon.coupon_date"]=one_pay
-                    bonds_stat.append(BondStat(bond_name=bond_name,
+                    bonds_stat.append(BondStat(bond_figi=instrument.figi,bond_name=bond_name,
                                                 bonds_count=bonds_count,
                                                 bond_curr_price=float(f"{instrument.current_price.units}.{instrument.current_price.nano}"),
                                                 next_pay=total_month_pay,
@@ -306,27 +308,20 @@ class App(tk.Tk):
         self.bond_result = bond_result
         return bond_result
 
-    def get_bond_coupons(self, bond_name:str):
+    def get_bond_figi_on_name(self, bond_name:str):
+        for bond in self.bond_result.bonds_stat:
+            if bond.bond_name == bond_name:
+                return bond.bond_figi
+
+    def get_figi_bond_coupons(self, bond_figi:str):
         current_bond_coupons={}
         with Client(TOKEN) as client:
-            account_bonds = client.instruments.bonds().instruments
-            bond_figi=""
-            for bond in account_bonds:
-                if bond.name in bond_name:
-                    bond_figi=bond.figi
-                    break
-            portfolio = client.operations.get_portfolio(account_id=self.bond_invest_facade.get_current_account())
-            for instrument in portfolio.positions:
-                if instrument.figi==bond_figi:
-                    for coupon in client.instruments.get_bond_coupons(figi=bond_figi,from_= self.get_start_date(), to=self.get_end_date()).events:
-                        
-                        one_pay = float(f'{coupon.pay_one_bond.units}.{coupon.pay_one_bond.nano}')
-                        current_bond_coupons[coupon.coupon_date]=one_pay
-                    break
-                
+            for coupon in client.instruments.get_bond_coupons(figi=bond_figi,from_= self.get_start_date(), to=self.get_end_date()).events:
+                print(f"found bound coupon {coupon}")
+                one_pay = float(f'{coupon.pay_one_bond.units}.{coupon.pay_one_bond.nano}')
+                current_bond_coupons[coupon.coupon_date]=one_pay
+
             return current_bond_coupons 
-
-
 
     def bond_plot(self):
         payments_stat = self.get_pay_dates()
