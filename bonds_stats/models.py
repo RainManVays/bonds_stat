@@ -3,6 +3,9 @@ from sqlalchemy.orm import relationship
 from database import Base
 from tinkoff.invest import Bond, Coupon
 from datetime import datetime
+from setup_logging import setup_logging
+log= setup_logging()
+
 
 class BondSqlData(Base):
     __tablename__ = 'bond'

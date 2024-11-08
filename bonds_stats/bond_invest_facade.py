@@ -11,6 +11,12 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 config= configparser.ConfigParser()
 config.read('config.ini')
+from setup_logging import setup_logging
+log= setup_logging()
+DATABASE_URL=config['DEFAULT']["DATABASE_URL"]
+
+
+
 
 class BondInvestFacade:
 
@@ -20,7 +26,8 @@ class BondInvestFacade:
         self.token = token
         self.broker_bonds=[]
         self.accounts={}
-        self.engine = create_engine("sqlite:///bonds_db.sqlite")
+        log.debug(f"engine create database {DATABASE_URL}")
+        self.engine = create_engine(DATABASE_URL, echo=True)
 
 
     def get_bond_name(self, bond_figi):
@@ -79,28 +86,30 @@ class BondInvestFacade:
 
     def get_bonds_from_tcs(self):
         black_list_invalid_bonds =['BBG001CYCG37','TCS878009866']
-        print('get bonds from TCS')
+        log.debug('get bonds from TCS')
         with Client(self.token) as client:
             bonds_sql_list=[]
             for bond in client.instruments.bonds().instruments:
                 if bond.figi in black_list_invalid_bonds:
                     continue
                 bonds_sql_list.append(BondSqlData(bond))
-                print(f"{bond.name} {bond.coupon_quantity_per_year}")
-            print(f'TCS bonds count {len(bonds_sql_list)}')
+                log.debug(f"{bond.name} {bond.coupon_quantity_per_year}")
+            log.debug(f'TCS bonds count {len(bonds_sql_list)}')
             return bonds_sql_list
 
 
 
     def update_db_bonds(self,engine):
-        print('update bonds')
+        log.debug('update bonds')
         Session = sessionmaker(bind=engine)
         BondSqlData(None).create_tables(engine)
         s = Session()
-        tcs_bonds=self.get_bonds_from_tcs()
+        
         db_bonds = [figi[0] for figi in s.query(BondSqlData.figi)]
+        log.debug(f"count bonds: {len(db_bonds)}")
+        tcs_bonds=self.get_bonds_from_tcs()
         if len(db_bonds)==0:
-            print('0 bonds in database add all bonds from tcs')
+            log.debug('0 bonds in database add all bonds from tcs')
             
             s.add_all(tcs_bonds)
             s.commit()
@@ -110,7 +119,7 @@ class BondInvestFacade:
         for tcs_bond in tcs_bonds:
             if tcs_bond.figi not in db_bonds:
                 s.add(BondSqlData(tcs_bond))
-                print(f'append new bond {tcs_bond.name}  date rep: {tcs_bond.state_reg_date}')
+                log.debug(f'append new bond {tcs_bond.name}  date rep: {tcs_bond.state_reg_date}')
             s.commit()
             s.close()
 
@@ -136,13 +145,13 @@ class BondInvestFacade:
         
         coupon_sql_list=[]
         with Client(self.token) as client:
-            print(f'get coupon for figi: {bond_figi}')
+            log.debug(f'get coupon for figi: {bond_figi}')
             for coupon in client.instruments.get_bond_coupons(figi=bond_figi,from_=start_date,to=end_date).events:
                 if coupon.figi != bond_figi:
-                    print(f'coupon figi {coupon.figi} not equals bond figi {bond_figi} and will be replaced')
+                    log.debug(f'coupon figi {coupon.figi} not equals bond figi {bond_figi} and will be replaced')
                     coupon.figi=bond_figi
                 coupon_sql_list.append(CouponSqlData(coupon))            
-                print(f"new coupon figi: {coupon.figi} date: {coupon.coupon_date} pay size: {coupon.pay_one_bond}")
+                log.debug(f"new coupon figi: {coupon.figi} date: {coupon.coupon_date} pay size: {coupon.pay_one_bond}")
         return coupon_sql_list
 
 
@@ -157,15 +166,15 @@ class BondInvestFacade:
                     coupons= self.get_coupon_from_tcs(figi)
                     break
                 except Exception as ex:
-                    print("TCS cry abour rate limit, wait 60 sec and repeat")
-                    print(ex)
+                    log.debug("TCS cry abour rate limit, wait 60 sec and repeat")
+                    log.debug(ex)
                     time.sleep(60)
                     exc_count+=1
                     if exc_count>=10:
                         raise Exception('count TCS rate limit errors more than 10, stop working')
 
             s.add_all(coupons)
-            print(f'add new coupons in bond {figi}')
+            log.debug(f'add new coupons in bond {figi}')
             s.commit()
             time.sleep(15)
         s.close()
@@ -184,14 +193,14 @@ class BondInvestFacade:
         return bonds_stat
 
 
-#добавить date_update, date_insert, если date_insert\update старше чем сутки- обновить таблицу бондов
+#добавить если date_insert старше чем сутки- обновить таблицу бондов
 
     def get_all_bonds(self):      
         bonds_stat=[] 
-        #self.update_db_bonds(self.engine)
-        
-        #bonds=crud.get_all_bonds()
+        self.update_db_bonds(self.engine)
         bonds=None
+        bonds=crud.get_all_bonds()
+        
         if not bonds:
             with Client(self.token) as client:
                 
@@ -200,7 +209,8 @@ class BondInvestFacade:
                     crud.create_bond(bond)
                 
                 for bond in bonds:
-                    bonds_stat.append(BondInfo(bond,None))#self.get_bond_coupon(bond.figi,self.get_start_date(), self.get_end_date())))
+                    bonds_stat.append(BondInfo(bond,None))
+                    #self.get_bond_coupon(bond.figi,self.get_start_date(), self.get_end_date())))
 
         return bonds_stat
 

@@ -2,7 +2,6 @@ import tkinter as tk
 import matplotlib
 import matplotlib.pyplot as plt
 from bond_invest_facade import BondInvestFacade
-
 from bonds_screener_view import BondsScreener
 from bond_payment_view import BondsPayment
 matplotlib.use('TkAgg')
@@ -20,6 +19,10 @@ from matplotlib.backends.backend_tkagg import (
 )
 config= configparser.ConfigParser()
 config.read('config.ini')
+
+from setup_logging import setup_logging
+log= setup_logging()
+
 
 os.environ["INVEST_TOKEN"]=config['DEFAULT']["TOKEN"]
 from tinkoff.invest.token import TOKEN
@@ -127,6 +130,41 @@ class App(tk.Tk):
         self.dec.place(width=150,height=30,x=1000,y=30)
         self.frame_coupons.pack(anchor=tk.S, fill=tk.X, padx=5, pady=5)
 
+
+
+    def initCoupons_new(self):
+        self.frame_coupons = ttk.Frame(
+                self.my_bond_frame,
+                borderwidth=1,
+                relief=tk.SOLID,
+                padding=[8, 10],
+                width=1400,
+                height=80
+            )
+
+        # Список месяцев и их позиции
+        months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
+        label_width = 150
+        label_height = 30
+        x_offset = 200
+        y_positions = [5, 30]
+
+        # Создаем и размещаем метки для месяцев
+        self.month_labels = {}
+        for i, month in enumerate(months):
+            x = (i % 6) * x_offset
+            y = y_positions[i // 6]
+            label = ttk.Label(self.frame_coupons, text=month, font=("Arial", 13))
+            label.place(width=label_width, height=label_height, x=x, y=y)
+            self.month_labels[month] = label
+
+        # Метка для общей суммы
+        self.coupon_total = ttk.Label(self.frame_coupons, text="Total: ", font=("Arial", 14))
+        self.coupon_total.place(width=label_width, height=label_height, x=1200, y=5)
+
+        # Размещение фрейма
+        self.frame_coupons.pack(anchor=tk.S, fill=tk.X, padx=5, pady=5)
+
     def initLabels(self):
         self.frame_labels = ttk.Frame(self.my_bond_frame,borderwidth=1, relief=tk.SOLID, padding=[8, 10])
         self.total_payment = ttk.Label(self.frame_labels,text="total_payment")
@@ -181,13 +219,13 @@ class App(tk.Tk):
 
     def bond_selected(self, event):
         for bond in self.tree.selection():
-            print(f"selected bond {bond}")
+            log.debug(f"selected bond {bond}")
             item = self.tree.item(bond)
             bond_id = item["values"][0]
             coupon_count = item["values"][1]
-            print(f'bond id {bond_id}')
+            log.debug(f'bond id {bond_id}')
             coupons =self.get_figi_bond_coupons(self.get_bond_figi_on_name(bond_id))
-            print(f"bond coupons {coupons}")
+            log.debug(f"bond coupons {coupons}")
             self.coupon_label_clean()
             fg_color = "green"
             total_pay = 0.0
@@ -208,7 +246,7 @@ class App(tk.Tk):
             }
 
             for month, value in coupons.items():
-                print(f"month {month} value {value}")
+                log.debug(f"month {month} value {value}")
                 payment = value * coupon_count
                 total_pay += payment
 
@@ -275,7 +313,7 @@ class App(tk.Tk):
                     bond_name= bond_facade.get_bond_name(instrument.figi)
                     bonds_count = instrument.quantity.units
                     bond_actual_price=float(f"{instrument.current_price.units}.{instrument.current_price.nano}")
-                    print(f"bond {bond_name} type {instrument.instrument_type} count {bonds_count} price {bond_actual_price:.2f}")
+                    log.debug(f"bond {bond_name} type {instrument.instrument_type} count {bonds_count} price {bond_actual_price:.2f}")
                     current_bond_coupons={}
                     total_month_pay=0.0
                     bond_payment_months=[]
@@ -283,7 +321,7 @@ class App(tk.Tk):
                         one_pay = float(f'{coupon.pay_one_bond.units}.{coupon.pay_one_bond.nano}')
                         if not total_month_pay:
                             total_month_pay=float(f"{one_pay*bonds_count:.2f}")
-                        print(f'pay date {coupon.coupon_date} pay for one bond {one_pay} all payment for date {total_month_pay}')
+                        log.debug(f'pay date {coupon.coupon_date} pay for one bond {one_pay} all payment for date {total_month_pay}')
                         coupon_month=coupon.coupon_date.month#.strftime('%B')
                         bond_payment_months.append(calendar.month_abbr[coupon_month])
                         if bond_pay_dates.get(coupon_month):
@@ -317,7 +355,7 @@ class App(tk.Tk):
         current_bond_coupons={}
         with Client(TOKEN) as client:
             for coupon in client.instruments.get_bond_coupons(figi=bond_figi,from_= self.get_start_date(), to=self.get_end_date()).events:
-                print(f"found bound coupon {coupon}")
+                log.debug(f"found bound coupon {coupon}")
                 one_pay = float(f'{coupon.pay_one_bond.units}.{coupon.pay_one_bond.nano}')
                 current_bond_coupons[coupon.coupon_date]=one_pay
 
@@ -356,4 +394,5 @@ class App(tk.Tk):
 
 if __name__ == '__main__':
     app = App()
+    log.info("Application Started.")
     app.mainloop()

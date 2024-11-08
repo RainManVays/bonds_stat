@@ -6,9 +6,10 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 
 DATABASE_URL=config['DEFAULT']["DATABASE_URL"]
+from setup_logging import setup_logging
+log= setup_logging()
 
-
-print(f"engine create database {DATABASE_URL}")
+log.debug(f"engine create database {DATABASE_URL}")
 engine = create_engine(DATABASE_URL, echo=True)
 
 SessionLocal =sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -23,4 +24,4 @@ def init_db():
         import models  # Импортируем модели
         Base.metadata.create_all(bind=engine)
     else:
-        print("Таблицы уже существуют в базе данных")
+        log.debug("Таблицы уже существуют в базе данных новые не будут созданы")

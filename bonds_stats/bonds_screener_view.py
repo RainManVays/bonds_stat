@@ -4,6 +4,8 @@ import tkinter as tk
 from BondClasses import BondStat, BondInfo
 from bond_invest_facade import BondInvestFacade
 from database import init_db
+from setup_logging import setup_logging
+log= setup_logging()
 
 class BondsScreener():
 

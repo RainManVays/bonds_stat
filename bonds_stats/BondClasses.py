@@ -2,6 +2,8 @@ from datetime import datetime, date
 from bond_invest_facade import *
 import share_methods as sm
 from tinkoff.invest.schemas import BondResponse, Coupon, PortfolioPosition, Bond
+from setup_logging import setup_logging
+log= setup_logging()
 
 class BondStat:
     def __init__(self, bond_figi, bond_name, bonds_count, bond_curr_price:float, next_pay: float, coupons:dict, months: list,end_date:str) -> None:

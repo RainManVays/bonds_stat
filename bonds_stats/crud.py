@@ -1,8 +1,10 @@
+from datetime import datetime, timedelta
 from models import BondSqlData, CouponSqlData
 from database import SessionLocal
 from tinkoff.invest.schemas import Bond
 
-
+from setup_logging import setup_logging
+log= setup_logging()
 
 # Create
 def create_bond(bond_data: Bond) -> BondSqlData:
@@ -71,9 +73,36 @@ def delete_bond(figi: str, date_insert: str) -> bool:
         return False
     finally:
         session.close()
+        
+def delete_all_bonds():
+    session = SessionLocal()
+    try:
+        # Удаляем все записи в таблице bond
+        deleted_rows = session.query(BondSqlData).delete()
+        session.commit()
+        log.debug(f"Удалено {deleted_rows} записей из таблицы bond.")
+    except Exception as e:
+        session.rollback()
+        log.debug(f"Ошибка при удалении всех записей: {e}")
+    finally:
+        session.close()
 
 
+def delete_old_bonds(days_old: int):
+    session = SessionLocal()
+    try:
+        # Определяем дату отсечения
+        cutoff_date = datetime.now() - timedelta(days=days_old)
 
+        # Удаляем записи, которые старше указанного числа дней
+        deleted_rows = session.query(BondSqlData).filter(BondSqlData.date_insert < cutoff_date).delete()
+        session.commit()
+        log.debug(f"Удалено {deleted_rows} записей, старше {days_old} дней.")
+    except Exception as e:
+        session.rollback()
+        log.debug(f"Ошибка при удалении записей: {e}")
+    finally:
+        session.close()
 
 
 

@@ -1,11 +1,19 @@
 from datetime import datetime
-
+import configparser
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
 from .models import CouponSqlData, BondSqlData
 
-engine = create_engine("sqlite:///bonds_db.sqlite", echo=True)
+config= configparser.ConfigParser()
+config.read('config.ini')
+
+DATABASE_URL=config['DEFAULT']["DATABASE_URL"]
+from setup_logging import setup_logging
+log= setup_logging()
+
+#выпилить и перенести логику в crud
+engine = create_engine(DATABASE_URL, echo=True)
 
 Session = sessionmaker(bind=engine)
 

@@ -5,6 +5,10 @@ from BondClasses import BondStat, BondInfo
 from bond_invest_facade import BondInvestFacade
 from datetime import datetime
 import calendar
+
+from setup_logging import setup_logging
+log= setup_logging()
+
 class BondsPayment():
 
     def __init__(self, parent_frame: ttk.Frame, token) -> None:
@@ -67,9 +71,9 @@ class BondsPayment():
                 payment_month_temp=payment[1].month
                 payment_month_sum=0
             else:
-                print(f"payment source: {payment}")
+                log.debug(f"payment source: {payment}")
                 payment_month_sum+=int(payment[2])
-                print(f"payment month sum: {payment_month_sum}")
+                log.debug(f"payment month sum: {payment_month_sum}")
             self.bond_payment_table.insert("", tk.END, values=(payment[0],payment[1],payment[2]))
             payment_sum+=int(payment[2])
         self.bond_payment_table.insert("", tk.END, values=("ВСЕГО: ","",payment_sum))
@@ -100,7 +104,7 @@ class BondsPayment():
             # Добавляем итоговую сумму
             self.bond_payment_table.insert("", tk.END, values=("ВСЕГО: ", "", payment_sum))
 
-            print(f"Итоговая сумма выплат: {payment_sum}")
+            log.debug(f"Итоговая сумма выплат: {payment_sum}")
 
 
 
