@@ -25,3 +25,4 @@ def init_db():
         Base.metadata.create_all(bind=engine)
     else:
         log.debug("Таблицы уже существуют в базе данных новые не будут созданы")
+

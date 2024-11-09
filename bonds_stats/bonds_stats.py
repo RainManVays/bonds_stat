@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 from bond_invest_facade import BondInvestFacade
 from bonds_screener_view import BondsScreener
 from bond_payment_view import BondsPayment
+from database import init_db
+import crud
+from share_methods import treeview_sort
 matplotlib.use('TkAgg')
 import calendar
 from  BondClasses import *
@@ -42,9 +45,9 @@ class App(tk.Tk):
         self.geometry("1400x800")
         self.protocol("WM_DELETE_WINDOW",self.exit)
         self.bond_invest_facade = BondInvestFacade(TOKEN)
+        self.init_style()
 
-
-        self.notebook = ttk.Notebook()
+        self.notebook = ttk.Notebook(style="Green.TNotebook")
         self.notebook.pack(expand=True, fill=tk.BOTH)
 
 
@@ -61,8 +64,11 @@ class App(tk.Tk):
         self.notebook.add(self.bond_payment, text="MyBondPayments")
         self.notebook.add(self.bond_screener, text="Bond Screener")
 
-        self.load_button=ttk.Button(self.my_bond_frame,text="load statistic", command=self.plot_enable)
+       
+        self.load_button=ttk.Button(self.my_bond_frame,text="load statistic", command=self.plot_enable,style="Green.TButton")
+        
         self.init_accounts_combobox()
+        
         self.initStatistic()
         self.initCoupons()
         self.initLabels()
@@ -73,7 +79,48 @@ class App(tk.Tk):
         
         self.load_button.pack()
         
+    def init_style(self):
+        self.style = ttk.Style()
+        self.style.theme_use("clam")  # Используем тему "clam" для лучшей кастомизации
+        self.style.configure("Green.TButton", background="#4CAF50", foreground="white", font=("Arial", 12))
         
+
+        # Настраиваем стиль для таблицы
+        self.style.configure("Treeview",
+                             background="#f0f0f0",  # Цвет фона
+                             foreground="black",    # Цвет текста
+                             rowheight=25,          # Высота строки
+                             fieldbackground="#e0e0e0",  # Фон ячеек
+                             font=("Arial", 12))    # Шрифт
+
+        # Настраиваем стиль заголовков
+        self.style.configure("Treeview.Heading",
+                             background="#4CAF50",  # Цвет фона заголовка
+                             foreground="white",    # Цвет текста заголовка
+                             font=("Arial", 13, "bold"))  # Жирный шрифт
+
+        # Настраиваем цвет выделения строки
+        self.style.map("Treeview",
+                       background=[("selected", "#90EE90")],  # Цвет выделенной строки
+                       foreground=[("selected", "black")])
+        # Стиль для Notebook (вкладки)
+        self.style.configure("Green.TNotebook",
+                             background="#4CAF50",
+                             foreground="white",
+                             padding=[10, 5],
+                             font=("Arial", 12, "bold"))
+
+        self.style.map("Green.TNotebook",
+                       background=[("selected", "#388E3C")],  # Цвет активной вкладки
+                       foreground=[("selected", "white")])
+        # Стиль для Combobox
+        self.style.configure("Combobox",
+                             fieldbackground="#e0e0e0",  # Цвет фона поля
+                             background="#ffffff",       # Цвет кнопки
+                             foreground="#333333",       # Цвет текста
+                             font=("Arial", 12))
+
+
 
     def exit(self):
         if self.plot_widget:
@@ -86,6 +133,8 @@ class App(tk.Tk):
         self.account_list_combobox = ttk.Combobox(self.notebook, values=list(accounts.keys()))
         self.account_list_combobox.pack(expand=False,padx=600)
         self.account_list_combobox.bind("<<ComboboxSelected>>", self.account_selected)
+        #self.progress = ttk.Progressbar(self.my_bond_frame, orient="horizontal", mode="indeterminate", length=300)
+        #self.progress.pack(padx=5, side="right")
         
     def account_selected(self, event):
         selection = self.account_list_combobox.get()
@@ -178,19 +227,6 @@ class App(tk.Tk):
         self.frame_labels.pack(anchor=tk.S, fill=tk.X, padx=5, pady=5)
         
 
-
-    def test_sort(self, col, reverse):
-        # получаем все значения столбцов в виде отдельного списка
-        l = [(self.tree.set(k, col), k) for k in self.tree.get_children("")]
-        # сортируем список
-        l.sort(reverse=reverse)
-        # переупорядочиваем значения в отсортированном порядке
-        for index,  (_, k) in enumerate(l):
-            self.tree.move(k, "", index)
-        # в следующий раз выполняем сортировку в обратном порядке
-        self.tree.heading(col, command=lambda: self.test_sort(col, not reverse))
-
-
     def bonds_table(self, bonds_list: [BondStat]):
         # определяем заголовки
         self.tree.column("#1", stretch=tk.NO,width=230)
@@ -201,13 +237,13 @@ class App(tk.Tk):
         self.tree.column("#6", stretch=tk.NO,width=50)
         self.tree.column("#7", stretch=tk.NO,width=70)
 
-        self.tree.heading("name", text="Название", command=lambda: self.test_sort(0, False))
-        self.tree.heading("count", text="Кол-во", command=lambda: self.test_sort(1, False))
-        self.tree.heading("price", text="Цена", command=lambda: self.test_sort(2, False))
-        self.tree.heading("pay", text="Платеж", command=lambda: self.test_sort(3, False))
-        self.tree.heading("month", text="Мес", command=lambda: self.test_sort(4, False))
-        self.tree.heading("percent", text="%", command=lambda: self.test_sort(5, False))
-        self.tree.heading("end_date", text="end_date", command=lambda: self.test_sort(6, False))
+        self.tree.heading("name", text="Название", command=lambda: treeview_sort(self.tree,0, False))
+        self.tree.heading("count", text="Кол-во", command=lambda: treeview_sort(self.tree,1, False))
+        self.tree.heading("price", text="Цена", command=lambda: treeview_sort(self.tree,2, False))
+        self.tree.heading("pay", text="Платеж", command=lambda: treeview_sort(self.tree,3, False))
+        self.tree.heading("month", text="Мес", command=lambda: treeview_sort(self.tree,4, False))
+        self.tree.heading("percent", text="%", command=lambda: treeview_sort(self.tree,5, False))
+        self.tree.heading("end_date", text="end_date", command=lambda: treeview_sort(self.tree,6, False))
 
         # добавляем данные
         self.tree.delete(*self.tree.get_children())
@@ -221,10 +257,10 @@ class App(tk.Tk):
         for bond in self.tree.selection():
             log.debug(f"selected bond {bond}")
             item = self.tree.item(bond)
-            bond_id = item["values"][0]
+            bond_name = item["values"][0]
             coupon_count = item["values"][1]
-            log.debug(f'bond id {bond_id}')
-            coupons =self.get_figi_bond_coupons(self.get_bond_figi_on_name(bond_id))
+            log.debug(f'bond_name {bond_name}')
+            coupons =self.get_figi_bond_coupons(crud.get_bond_figi_on_name(bond_name))
             log.debug(f"bond coupons {coupons}")
             self.coupon_label_clean()
             fg_color = "green"
@@ -346,10 +382,6 @@ class App(tk.Tk):
         self.bond_result = bond_result
         return bond_result
 
-    def get_bond_figi_on_name(self, bond_name:str):
-        for bond in self.bond_result.bonds_stat:
-            if bond.bond_name == bond_name:
-                return bond.bond_figi
 
     def get_figi_bond_coupons(self, bond_figi:str):
         current_bond_coupons={}
@@ -362,6 +394,9 @@ class App(tk.Tk):
             return current_bond_coupons 
 
     def bond_plot(self):
+        red=int(config['Graph']["red_color_limit"])
+        orange=int(config['Graph']["orange_color_limit"])
+        green=int(config['Graph']["green_color_limit"])
         payments_stat = self.get_pay_dates()
         lists = sorted(payments_stat.bond_pay_dates.items())
         month_name = lambda month:calendar.month_abbr[month]
@@ -369,11 +404,11 @@ class App(tk.Tk):
         month = [month_name(x) for x in month]
         bar_colors=[]
         for count in counts:
-            if count <=1500:
+            if count <=red:
                 bar_colors.append('tab:red')
-            elif count <= 3000 and count > 1500:
+            elif count <= orange and count > red:
                 bar_colors.append('tab:orange')
-            elif count >=5000:
+            elif count >=green:
                 bar_colors.append('tab:green')
             else:
                 bar_colors.append('tab:blue')
@@ -395,4 +430,5 @@ class App(tk.Tk):
 if __name__ == '__main__':
     app = App()
     log.info("Application Started.")
+    init_db()
     app.mainloop()

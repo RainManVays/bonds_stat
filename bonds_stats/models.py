@@ -4,9 +4,9 @@ from database import Base
 from tinkoff.invest import Bond, Coupon
 from datetime import datetime
 from setup_logging import setup_logging
+from tinkoff.invest.schemas import LastPrice
 log= setup_logging()
-
-
+    
 class BondSqlData(Base):
     __tablename__ = 'bond'
     figi =  Column(String, primary_key=True,  doc='Figi-идентификатор инструмента.')
@@ -117,6 +117,7 @@ class CouponSqlData(Base):
     __tablename__='coupon'
     #id =  Column( Integer, primary_key=True, autoincrement=True)
     figi =  Column(String,  primary_key=True, doc='Figi-идентификатор инструмента.')
+    date_insert =  Column(DateTime, primary_key=True,  doc='Дата добавления инструмента в базу')
     coupon_date =  Column(String,  primary_key=True, doc='Тикер инструмента.')
     coupon_number =  Column(Integer,  doc='Isin-идентификатор инструмента.')
     fix_date =  Column(String,  doc='Класс-код (секция торгов).')
@@ -141,6 +142,48 @@ class CouponSqlData(Base):
 
 
     def __init__(self, coupon_data: Coupon):
+        if not coupon_data:
+            return
+        self.figi=coupon_data.figi
+        
+        self.coupon_date=self.date_splitter(coupon_data.coupon_date)
+        self.coupon_number=coupon_data.coupon_number
+        self.fix_date=self.date_splitter(coupon_data.fix_date)
+        sd =str(coupon_data.pay_one_bond)
+        self.pay_one_bond=self.money_value_splitter(coupon_data.pay_one_bond)
+        self.coupon_type=str(coupon_data.coupon_type.name)
+        self.coupon_start_date=self.date_splitter(coupon_data.coupon_start_date)
+        self.coupon_end_date=self.date_splitter(coupon_data.coupon_end_date)
+        self.coupon_period=coupon_data.coupon_period
+        self.currency=sd[sd.index("currency='")+len("currency='"):sd.index("',")]
+
+        
+    def create_tables(self,engine):
+        Base.metadata.create_all(engine)
+
+
+class ObjectLastPrice(Base):
+    __tablename__='object_last_price'
+    figi =  Column(String,  primary_key=True, doc='Figi-идентификатор инструмента.')
+    date_insert =  Column(DateTime, primary_key=True,  doc='Дата добавления инструмента в базу')
+    price =  Column(String,  primary_key=True, doc='Тикер инструмента.')
+    time =  Column(Integer,  doc='Isin-идентификатор инструмента.')
+    instrument_uid =  Column(String,  doc='Класс-код (секция торгов).')
+
+
+    def date_splitter(self,bond_date):
+        if '00:00:00+00:00' in str(bond_date):
+            return str(bond_date)[:-len('00:00:00+00:00')]
+        return str(bond_date)
+    def money_value_splitter(self,money_value):
+        if 'units' in str(money_value):
+            sd=str(money_value)
+            return float(sd[sd.index("units=")+len("units="):sd.index(", nano")]+"."+sd[sd.index("nano=")+len("nano="):sd.index(")")])
+        return float(money_value)
+
+
+
+    def __init__(self, coupon_data: LastPrice):
         if not coupon_data:
             return
         self.figi=coupon_data.figi

@@ -7,6 +7,7 @@ from datetime import datetime
 import calendar
 
 from setup_logging import setup_logging
+from share_methods import treeview_sort
 log= setup_logging()
 
 class BondsPayment():
@@ -38,26 +39,15 @@ class BondsPayment():
         payment_tree.column("#2", stretch=tk.NO,width=250)
         payment_tree.column("#3", stretch=tk.NO,width=150)
 
-        payment_tree.heading("name", text="Название", command=lambda: self.test_sort(0, False))
-        payment_tree.heading("payment_date", text="Дата выплаты", command=lambda: self.test_sort(1, False))
-        payment_tree.heading("pay_summ", text="Сумма выплаты", command=lambda: self.test_sort(2, False))
+        payment_tree.heading("name", text="Название", command=lambda: treeview_sort(payment_tree,0, False))
+        payment_tree.heading("payment_date", text="Дата выплаты", command=lambda: treeview_sort(payment_tree,1, False))
+        payment_tree.heading("pay_summ", text="Сумма выплаты", command=lambda: treeview_sort(payment_tree,2, False))
         #bond_payment_progess = ttk.Progressbar(frame,orient="horizontal", length=300, variable=self.progress_var)
         #bond_payment_progess.place(width=800,height=10,x=320, y=720)
-        bond_payment_button=ttk.Button(frame,text="load data", command=self.bond_payment_enable)
+        bond_payment_button=ttk.Button(frame,text="load data", command=self.bond_payment_enable,style="Green.TButton")
         bond_payment_button.place(width=100,height=30,x=670, y=685)
         
         return payment_tree
-    
-    def test_sort(self, col, reverse):
-        # получаем все значения столбцов в виде отдельного списка
-        l = [(self.bond_payment_table.set(k, col), k) for k in self.bond_payment_table.get_children("")]
-        # сортируем список
-        l.sort(reverse=reverse)
-        # переупорядочиваем значения в отсортированном порядке
-        for index,  (_, k) in enumerate(l):
-            self.bond_payment_table.move(k, "", index)
-        # в следующий раз выполняем сортировку в обратном порядке
-        self.bond_payment_table.heading(col, command=lambda: self.test_sort(col, not reverse))
 
 
     def bonds_payment_table_b(self, payment_list):

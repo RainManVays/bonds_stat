@@ -163,3 +163,7 @@ bonds_stats/config.ini
 #db files
 *.sqlite
 bonds_stats/bonds.db
+
+
+#logs
+.log

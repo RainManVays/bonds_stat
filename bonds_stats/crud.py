@@ -29,11 +29,27 @@ def get_bond(figi: str, date_insert: str) -> BondSqlData:
     finally:
         session.close()
 
-# Read (get all bonds)
-def get_all_bonds() -> list[BondSqlData]:
+
+def get_bond_figi_on_name(bond_name:str):
     session = SessionLocal()
     try:
-        return session.query(BondSqlData).all()
+        return session.query(BondSqlData).filter(
+            BondSqlData.name==bond_name
+        ).first().figi
+    finally:
+        session.close()
+
+
+
+
+# Read (get all bonds)
+def get_all_bonds() -> list[BondSqlData]:
+    #[figi[0] for figi in s.query(BondSqlData.figi)]
+    session = SessionLocal()
+    try:
+        bonds = session.query(BondSqlData).all()
+        log.debug(f"selected bonds count {len(bonds)}")
+        return bonds
     finally:
         session.close()
 

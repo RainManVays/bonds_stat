@@ -26,10 +26,9 @@ class BondInvestFacade:
         self.token = token
         self.broker_bonds=[]
         self.accounts={}
-        log.debug(f"engine create database {DATABASE_URL}")
         self.engine = create_engine(DATABASE_URL, echo=True)
 
-
+    #вынести в crud
     def get_bond_name(self, bond_figi):
         if len(self.broker_bonds)>0:
             for bond in self.broker_bonds:
@@ -41,7 +40,7 @@ class BondInvestFacade:
                 for bond in self.broker_bonds:
                     if bond_figi in bond.figi:
                         return bond.name
-                    
+    #вынести в crud
     def get_bond_maturity_date(self, bond_figi):
         if len(self.broker_bonds)>0:
             for bond in self.broker_bonds:
@@ -102,7 +101,7 @@ class BondInvestFacade:
     def update_db_bonds(self,engine):
         log.debug('update bonds')
         Session = sessionmaker(bind=engine)
-        BondSqlData(None).create_tables(engine)
+        #BondSqlData(None).create_tables(engine)
         s = Session()
         
         db_bonds = [figi[0] for figi in s.query(BondSqlData.figi)]
@@ -156,7 +155,7 @@ class BondInvestFacade:
 
 
     def update_db_coupons(self,engine,bonds_figi:list,start_date='', end_date=''):
-        CouponSqlData(None).create_tables(engine)
+        #CouponSqlData(None).create_tables(engine)
         Session = sessionmaker(bind=engine)
         s = Session()
         exc_count= 0
@@ -180,42 +179,13 @@ class BondInvestFacade:
         s.close()
 
 
-    def get_all_bonds_d(self):      
-        bonds_stat=[] 
-        #self.update_db_bonds(self.engine)
-        with Client(self.token) as client:
-            
-            bonds = client.instruments.bonds().instruments
-            
-            for bond in bonds:
-                bonds_stat.append(BondInfo(bond,self.get_bond_coupon(bond.figi,self.get_start_date(), self.get_end_date())))
-
-        return bonds_stat
-
 
 #добавить если date_insert старше чем сутки- обновить таблицу бондов
 
-    def get_all_bonds(self):      
-        bonds_stat=[] 
+    def get_all_bonds(self) -> BondSqlData:      
         self.update_db_bonds(self.engine)
-        bonds=None
         bonds=crud.get_all_bonds()
-        
-        if not bonds:
-            with Client(self.token) as client:
-                
-                bonds = client.instruments.bonds().instruments
-                for bond in bonds:
-                    crud.create_bond(bond)
-                
-                for bond in bonds:
-                    bonds_stat.append(BondInfo(bond,None))
-                    #self.get_bond_coupon(bond.figi,self.get_start_date(), self.get_end_date())))
-
-        return bonds_stat
-
-
-
+        return bonds
 
 
     def get_bond_coupon(self, figi:str, start_date, end_date) -> list:

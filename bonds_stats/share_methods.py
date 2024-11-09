@@ -10,3 +10,14 @@ def money_value_to_float(money: MoneyValue) -> float:
     if type(money) == str:
         return float(money)
     return f"{float(f'{money.units}.{money.nano}'):.2f}"
+
+def treeview_sort(tree, col, reverse):
+    # получаем все значения столбцов в виде отдельного списка
+    l = [(tree.set(k, col), k) for k in tree.get_children("")]
+    # сортируем список
+    l.sort(reverse=reverse)
+    # переупорядочиваем значения в отсортированном порядке
+    for index,  (_, k) in enumerate(l):
+        tree.move(k, "", index)
+    # в следующий раз выполняем сортировку в обратном порядке
+    tree.heading(col, command=lambda: treeview_sort(tree,col, not reverse))
