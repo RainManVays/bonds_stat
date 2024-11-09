@@ -202,3 +202,5 @@ class ObjectLastPrice(Base):
         
     def create_tables(self,engine):
         Base.metadata.create_all(engine)
+
+
